@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+*.rsuser
+[Dd]ebug/
+[Rr]elease/
+*.nupkg
+*.DotSettings
+.vs/
+
+# ASP.NET Core
+**/wwwroot/lib/
+**/bin/
+**/obj/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
