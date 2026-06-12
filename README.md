@@ -71,7 +71,7 @@ erDiagram
         string Description
         string Phone
         string Email
-        string Address
+        string StreetAddress
         double Latitude
         double Longitude
         bool IsActive
@@ -83,7 +83,7 @@ erDiagram
         int StoreId FK
         string Name
         string Description
-        decimal Price
+        dec Price
         int Stock
         string ImageUrl
         bool IsActive
@@ -97,7 +97,7 @@ erDiagram
         int DeliveryDriverId FK
         int OrderStatusId FK
         int AddressId FK
-        decimal TotalAmount
+        dec TotalAmount
         datetime OrderDate
         datetime DeliveryDate
         bool IsActive
@@ -109,8 +109,8 @@ erDiagram
         int OrderId FK
         int ProductId FK
         int Quantity
-        decimal UnitPrice
-        decimal Subtotal
+        dec UnitPrice
+        dec Subtotal
         bool IsActive
         datetime CreatedAt
         datetime UpdatedAt
@@ -149,7 +149,7 @@ erDiagram
         int Id PK
         int OrderId FK
         int PaymentMethodId FK
-        decimal Amount
+        dec Amount
         datetime PaymentDate
         string TransactionId
         string Status
