@@ -3,9 +3,9 @@
 }
 
 <div class="text-center py-5">
-    <div class="display-1 mb-3" style="color: var(--accent);">
-        <i class="bi bi-globe2"></i>
-    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="15"/>
+    </svg>
     <h1 class="display-4 fw-bold">Welcome to Orbi</h1>
     <p class="lead mb-4">
         Your unified multi-service delivery platform. Restaurants, pharmacies, and supermarkets — all in one orbit.
@@ -13,21 +13,27 @@
     <div class="row justify-content-center g-4">
         <div class="col-md-4">
             <div class="card text-center p-3">
-                <i class="bi bi-shop display-6" style="color: var(--accent);"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
                 <h5 class="mt-2">Products</h5>
                 <p class="text-muted">Browse and manage products across all stores.</p>
                 <a asp-controller="Products" asp-action="Index" class="btn btn-primary">
-                    <i class="bi bi-arrow-right"></i> Go to Products
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    Go to Products
                 </a>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card text-center p-3">
-                <i class="bi bi-cart-check display-6" style="color: #22c55e;"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
                 <h5 class="mt-2">Orders</h5>
                 <p class="text-muted">Track and manage customer orders in real time.</p>
                 <a asp-controller="Orders" asp-action="Index" class="btn btn-success">
-                    <i class="bi bi-arrow-right"></i> Go to Orders
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    Go to Orders
                 </a>
             </div>
         </div>

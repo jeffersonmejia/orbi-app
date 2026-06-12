@@ -4,7 +4,12 @@
     ViewData["Title"] = "Create Product";
 }
 
-<h3><i class="bi bi-plus-lg"></i> Create Product</h3>
+<div class="d-flex align-items-center gap-2 mb-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <h3 style="margin: 0;">Create Product</h3>
+</div>
 <hr />
 
 <div class="row">
@@ -38,8 +43,8 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="Price" class="form-label"></label>
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input asp-for="Price" class="form-control" />
+                                <span class="input-group-text" style="border-radius: 10px 0 0 10px;">$</span>
+                                <input asp-for="Price" class="form-control" style="border-radius: 0 10px 10px 0;" />
                             </div>
                             <span asp-validation-for="Price" class="text-danger"></span>
                         </div>
@@ -56,12 +61,14 @@
                         <span asp-validation-for="ImageUrl" class="text-danger"></span>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-4 d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Create
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Create
                         </button>
                         <a asp-action="Index" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to List
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                            Back
                         </a>
                     </div>
                 </form>
