@@ -30,55 +30,6 @@ erDiagram
     DeliveryDriver ||--o{ Order : delivers
     PaymentMethod ||--o{ Payment : used_in
     Order ||--o| Payment : pays
-
-    Customer {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        string Phone
-        string PasswordHash
-        bool IsActive
-    }
-    Store {
-        int Id PK
-        int CategoryId FK
-        string Name
-        string Phone
-        string Email
-        double Latitude
-        double Longitude
-        bool IsActive
-    }
-    Product {
-        int Id PK
-        int StoreId FK
-        string Name
-        decimal Price
-        int Stock
-        bool IsActive
-    }
-    Order {
-        int Id PK
-        int CustomerId FK
-        int StoreId FK
-        int DeliveryDriverId FK
-        int OrderStatusId FK
-        decimal TotalAmount
-        datetime OrderDate
-        bool IsActive
-    }
-    DeliveryDriver {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        double CurrentLatitude
-        double CurrentLongitude
-        datetime LastLocationUpdate
-        bool IsAvailable
-        bool IsActive
-    }
 ```
 
 ## Installation
