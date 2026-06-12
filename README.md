@@ -79,6 +79,7 @@ erDiagram
         bool IsAvailable
         bool IsActive
     }
+```
 
 ## Installation
 
