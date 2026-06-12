@@ -4,66 +4,70 @@
     ViewData["Title"] = "Edit Product";
 }
 
-<h1 class="h3"><i class="bi bi-pencil"></i> Edit Product</h1>
+<h3><i class="bi bi-pencil"></i> Edit Product</h3>
 <hr />
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
 
-            <div class="mb-3">
-                <label asp-for="StoreId" class="form-label"></label>
-                <select asp-for="StoreId" asp-items="@(ViewBag.StoreId as SelectList)" class="form-select">
-                    <option value="">-- Select Store --</option>
-                </select>
-                <span asp-validation-for="StoreId" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Price" class="form-label"></label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input asp-for="Price" class="form-control" />
+                    <div class="mb-3">
+                        <label asp-for="StoreId" class="form-label"></label>
+                        <select asp-for="StoreId" asp-items="@(ViewBag.StoreId as SelectList)" class="form-select">
+                            <option value="">-- Select Store --</option>
+                        </select>
+                        <span asp-validation-for="StoreId" class="text-danger"></span>
                     </div>
-                    <span asp-validation-for="Price" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Stock" class="form-label"></label>
-                    <input asp-for="Stock" class="form-control" />
-                    <span asp-validation-for="Stock" class="text-danger"></span>
-                </div>
-            </div>
 
-            <div class="mb-3">
-                <label asp-for="ImageUrl" class="form-label"></label>
-                <input asp-for="ImageUrl" class="form-control" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Save
-                </button>
-                <a asp-action="Index" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to List
-                </a>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Price" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Price" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Stock" class="form-label"></label>
+                            <input asp-for="Stock" class="form-control" />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label"></label>
+                        <input asp-for="ImageUrl" class="form-control" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 

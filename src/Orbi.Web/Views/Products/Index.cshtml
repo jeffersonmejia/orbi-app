@@ -5,50 +5,52 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3"><i class="bi bi-box-seam"></i> Products</h1>
+    <h3><i class="bi bi-box-seam"></i> Products</h3>
     <a asp-action="Create" class="btn btn-primary">
         <i class="bi bi-plus-lg"></i> Create New Product
     </a>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>@Html.DisplayNameFor(m => m.First().Name)</th>
-                <th>@Html.DisplayNameFor(m => m.First().StoreName)</th>
-                <th>@Html.DisplayNameFor(m => m.First().Price)</th>
-                <th>@Html.DisplayNameFor(m => m.First().Stock)</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
                 <tr>
-                    <td>@item.Name</td>
-                    <td>@item.StoreName</td>
-                    <td>@item.Price.ToString("C")</td>
-                    <td>@item.Stock</td>
-                    <td class="text-center">
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Details">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
-                              onsubmit="return confirm('Are you sure you want to delete this product?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </td>
+                    <th>@Html.DisplayNameFor(m => m.First().Name)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().StoreName)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Price)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Stock)</th>
+                    <th class="text-center">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.StoreName</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>@item.Stock</td>
+                        <td class="text-center">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @if (!Model.Any())
