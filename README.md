@@ -147,7 +147,7 @@ erDiagram
     }
     Payment {
         int Id PK
-        int OrderId FK UK
+        int OrderId FK
         int PaymentMethodId FK
         decimal Amount
         datetime PaymentDate
