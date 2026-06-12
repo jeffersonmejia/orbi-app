@@ -62,7 +62,7 @@ erDiagram
         int Id PK
         int CustomerId FK
         int StoreId FK
-        int? DeliveryDriverId FK
+        int DeliveryDriverId FK
         int OrderStatusId FK
         decimal TotalAmount
         datetime OrderDate
