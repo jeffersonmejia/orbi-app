@@ -18,10 +18,13 @@ public class ProductsController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string? searchField, string? searchTerm, int page = 1)
     {
-        var products = await _productService.GetAllAsync();
-        return View(products);
+        var result = await _productService.GetPaginatedAsync(searchField, searchTerm, page, 5);
+        ViewBag.SearchField = searchField;
+        ViewBag.SearchTerm = searchTerm;
+        return View(result);
     }
 
     public async Task<IActionResult> Details(int id)

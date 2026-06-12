@@ -16,14 +16,44 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     public async Task<IEnumerable<OrderViewModel>> GetAllAsync()
     {
-        return await _context.Orders
+        return await GetAllQuery().ToListAsync();
+    }
+
+    public async Task<PaginatedList<OrderViewModel>> GetPaginatedAsync(
+        string? searchField, string? searchTerm, int page, int pageSize)
+    {
+        var query = GetAllQuery();
+
+        if (!string.IsNullOrWhiteSpace(searchField) && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLower();
+            query = searchField.ToLower() switch
+            {
+                "customer" => query.Where(o => o.CustomerName!.ToLower().Contains(term)),
+                "store" => query.Where(o => o.StoreName!.ToLower().Contains(term)),
+                "status" => query.Where(o => o.OrderStatusName!.ToLower().Contains(term)),
+                _ => query
+            };
+        }
+
+        var count = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(o => o.OrderDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginatedList<OrderViewModel>(items, count, page, pageSize);
+    }
+
+    private IQueryable<OrderViewModel> GetAllQuery()
+    {
+        return _context.Orders
             .Include(o => o.Customer)
             .Include(o => o.Store)
             .Include(o => o.DeliveryDriver)
             .Include(o => o.OrderStatus)
             .Include(o => o.Address)
-            .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
             .Where(o => o.IsActive)
             .Select(o => new OrderViewModel
             {
@@ -42,16 +72,8 @@ public class OrderService : IEntityService<Order, OrderViewModel>
                 OrderStatusName = o.OrderStatus.Name,
                 AddressLine = $"{o.Address.Street}, {o.Address.City}",
                 IsActive = o.IsActive,
-                Items = o.OrderDetails.Select(od => new OrderItemViewModel
-                {
-                    ProductId = od.ProductId,
-                    ProductName = od.Product.Name,
-                    Quantity = od.Quantity,
-                    UnitPrice = od.UnitPrice,
-                    Subtotal = od.Subtotal
-                }).ToList()
-            })
-            .ToListAsync();
+                Items = new List<OrderItemViewModel>()
+            });
     }
 
     public async Task<OrderViewModel?> GetByIdAsync(int id)

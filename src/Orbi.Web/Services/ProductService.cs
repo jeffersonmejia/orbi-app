@@ -16,9 +16,40 @@ public class ProductService : IEntityService<Product, ProductViewModel>
 
     public async Task<IEnumerable<ProductViewModel>> GetAllAsync()
     {
-        return await _context.Products
+        return await GetAllQuery().ToListAsync();
+    }
+
+    public async Task<PaginatedList<ProductViewModel>> GetPaginatedAsync(
+        string? searchField, string? searchTerm, int page, int pageSize)
+    {
+        var query = GetAllQuery();
+
+        if (!string.IsNullOrWhiteSpace(searchField) && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim().ToLower();
+            query = searchField.ToLower() switch
+            {
+                "name" => query.Where(p => p.Name.ToLower().Contains(term)),
+                "store" => query.Where(p => p.StoreName!.ToLower().Contains(term)),
+                _ => query
+            };
+        }
+
+        var count = await query.CountAsync();
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginatedList<ProductViewModel>(items, count, page, pageSize);
+    }
+
+    private IQueryable<ProductViewModel> GetAllQuery()
+    {
+        return _context.Products
             .Include(p => p.Store)
             .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
             .Select(p => new ProductViewModel
             {
                 Id = p.Id,
@@ -30,8 +61,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
                 ImageUrl = p.ImageUrl,
                 StoreName = p.Store.Name,
                 IsActive = p.IsActive
-            })
-            .ToListAsync();
+            });
     }
 
     public async Task<ProductViewModel?> GetByIdAsync(int id)

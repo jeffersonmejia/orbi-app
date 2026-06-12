@@ -18,10 +18,13 @@ public class OrdersController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string? searchField, string? searchTerm, int page = 1)
     {
-        var orders = await _orderService.GetAllAsync();
-        return View(orders);
+        var result = await _orderService.GetPaginatedAsync(searchField, searchTerm, page, 5);
+        ViewBag.SearchField = searchField;
+        ViewBag.SearchTerm = searchTerm;
+        return View(result);
     }
 
     public async Task<IActionResult> Details(int id)
