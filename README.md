@@ -30,6 +30,143 @@ erDiagram
     DeliveryDriver ||--o{ Order : delivers
     PaymentMethod ||--o{ Payment : used_in
     Order ||--o| Payment : pays
+
+    Customer {
+        int Id PK
+        string FirstName
+        string LastName
+        string Email UK
+        string Phone
+        string PasswordHash
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Address {
+        int Id PK
+        int CustomerId FK
+        string Street
+        string City
+        string State
+        string ZipCode
+        string Country
+        double Latitude
+        double Longitude
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    StoreCategory {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Store {
+        int Id PK
+        int CategoryId FK
+        string Name
+        string Description
+        string Phone
+        string Email
+        string Address
+        double Latitude
+        double Longitude
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Product {
+        int Id PK
+        int StoreId FK
+        string Name
+        string Description
+        decimal Price
+        int Stock
+        string ImageUrl
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Order {
+        int Id PK
+        int CustomerId FK
+        int StoreId FK
+        int DeliveryDriverId FK
+        int OrderStatusId FK
+        int AddressId FK
+        decimal TotalAmount
+        datetime OrderDate
+        datetime DeliveryDate
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    OrderDetail {
+        int Id PK
+        int OrderId FK
+        int ProductId FK
+        int Quantity
+        decimal UnitPrice
+        decimal Subtotal
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    OrderStatus {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    DeliveryDriver {
+        int Id PK
+        string FirstName
+        string LastName
+        string Email UK
+        string Phone
+        double CurrentLatitude
+        double CurrentLongitude
+        datetime LastLocationUpdate
+        bool IsAvailable
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    PaymentMethod {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Payment {
+        int Id PK
+        int OrderId FK UK
+        int PaymentMethodId FK
+        decimal Amount
+        datetime PaymentDate
+        string TransactionId
+        string Status
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Review {
+        int Id PK
+        int CustomerId FK
+        int StoreId FK
+        int Rating
+        string Comment
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
 ```
 
 ## Installation
