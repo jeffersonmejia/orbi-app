@@ -200,6 +200,12 @@ a:hover { color: var(--accent-hover); }
 .table tbody tr:last-child td { border-bottom: none; }
 .table tbody tr:hover { background: rgba(255,255,255,0.25); }
 
+/* ─── Auth Forms ─── */
+.auth-card {
+  border: 1px solid var(--accent-soft);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6), 0 4px 24px rgba(0,0,0,0.06);
+}
+
 /* ─── Forms ─── */
 .form-label {
   font-size: 0.78rem;

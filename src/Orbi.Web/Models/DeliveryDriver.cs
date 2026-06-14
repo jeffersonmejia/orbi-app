@@ -4,8 +4,7 @@ namespace Orbi.Web.Models;
 
 public class DeliveryDriver : BaseEntity
 {
-    [Required]
-    public string UserId { get; set; } = string.Empty;
+    public string? UserId { get; set; }
 
     [Required]
     [StringLength(100)]

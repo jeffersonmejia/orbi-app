@@ -12,7 +12,7 @@ using Orbi.Web.Data;
 namespace Orbi.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260614135321_InitialCreate")]
+    [Migration("20260614135741_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -317,7 +317,6 @@ namespace Orbi.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -380,7 +379,6 @@ namespace Orbi.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -744,7 +742,6 @@ namespace Orbi.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -857,8 +854,7 @@ namespace Orbi.Web.Migrations
                     b.HasOne("Orbi.Web.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Orbi.Web.Models.DeliveryDriver", b =>
@@ -866,8 +862,7 @@ namespace Orbi.Web.Migrations
                     b.HasOne("Orbi.Web.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Orbi.Web.Models.Order", b =>
@@ -991,8 +986,7 @@ namespace Orbi.Web.Migrations
                     b.HasOne("Orbi.Web.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
                 });
