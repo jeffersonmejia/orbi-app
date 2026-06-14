@@ -25,11 +25,9 @@
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     }
     @{
-        var isCatalog = currentController is "Products" or "StoreCategories";
-        var isOrders = currentController is "Orders" or "OrderStatuses";
-        var isBusiness = currentController is "Stores" or "Customers" or "Addresses" or "DeliveryDrivers";
-        var isFinance = currentController is "Payments" or "PaymentMethods";
-        var isReviews = currentController is "Reviews";
+        var isCatalog = currentController is "Products" or "StoreCategories" or "Stores" or "Reviews";
+        var isOrders = currentController is "Orders" or "OrderStatuses" or "Payments" or "PaymentMethods";
+        var isDirectory = currentController is "Customers" or "Addresses" or "DeliveryDrivers";
     }
     <nav class="island-nav">
         <a class="island-link @(currentController == "Home" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
@@ -51,6 +49,14 @@
                     <i class="bi bi-tags-fill"></i>
                     Categories
                 </a>
+                <a class="island-link @(currentController == "Stores" ? "active" : "")" asp-controller="Stores" asp-action="Index">
+                    <i class="bi bi-shop"></i>
+                    Stores
+                </a>
+                <a class="island-link @(currentController == "Reviews" ? "active" : "")" asp-controller="Reviews" asp-action="Index">
+                    <i class="bi bi-chat-square-text-fill"></i>
+                    Reviews
+                </a>
             </div>
         </div>
         <div class="nav-dropdown">
@@ -68,40 +74,6 @@
                     <i class="bi bi-signpost-2-fill"></i>
                     Statuses
                 </a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isBusiness ? "active" : "")" type="button">
-                <i class="bi bi-building"></i>
-                Business
-                <i class="bi bi-chevron-down drop-chevron"></i>
-            </button>
-            <div class="dropdown-menu">
-                <a class="island-link @(currentController == "Stores" ? "active" : "")" asp-controller="Stores" asp-action="Index">
-                    <i class="bi bi-shop"></i>
-                    Stores
-                </a>
-                <a class="island-link @(currentController == "Customers" ? "active" : "")" asp-controller="Customers" asp-action="Index">
-                    <i class="bi bi-people-fill"></i>
-                    Customers
-                </a>
-                <a class="island-link @(currentController == "Addresses" ? "active" : "")" asp-controller="Addresses" asp-action="Index">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    Addresses
-                </a>
-                <a class="island-link @(currentController == "DeliveryDrivers" ? "active" : "")" asp-controller="DeliveryDrivers" asp-action="Index">
-                    <i class="bi bi-truck"></i>
-                    Drivers
-                </a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isFinance ? "active" : "")" type="button">
-                <i class="bi bi-cash-stack"></i>
-                Finance
-                <i class="bi bi-chevron-down drop-chevron"></i>
-            </button>
-            <div class="dropdown-menu">
                 <a class="island-link @(currentController == "Payments" ? "active" : "")" asp-controller="Payments" asp-action="Index">
                     <i class="bi bi-cash-stack"></i>
                     Payments
@@ -113,15 +85,23 @@
             </div>
         </div>
         <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isReviews ? "active" : "")" type="button">
-                <i class="bi bi-chat-square-text-fill"></i>
-                Reviews
+            <button class="island-link dropdown-toggle @(isDirectory ? "active" : "")" type="button">
+                <i class="bi bi-people-fill"></i>
+                Directory
                 <i class="bi bi-chevron-down drop-chevron"></i>
             </button>
             <div class="dropdown-menu">
-                <a class="island-link @(currentController == "Reviews" ? "active" : "")" asp-controller="Reviews" asp-action="Index">
-                    <i class="bi bi-chat-square-text-fill"></i>
-                    Reviews
+                <a class="island-link @(currentController == "Customers" ? "active" : "")" asp-controller="Customers" asp-action="Index">
+                    <i class="bi bi-people-fill"></i>
+                    Customers
+                </a>
+                <a class="island-link @(currentController == "Addresses" ? "active" : "")" asp-controller="Addresses" asp-action="Index">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    Addresses
+                </a>
+                <a class="island-link @(currentController == "DeliveryDrivers" ? "active" : "")" asp-controller="DeliveryDrivers" asp-action="Index">
+                    <i class="bi bi-truck"></i>
+                    Drivers
                 </a>
             </div>
         </div>
