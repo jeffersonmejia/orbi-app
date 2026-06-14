@@ -133,7 +133,14 @@
 /* ─── Dropdown submenus ─── */
 .nav-dropdown { position: relative; }
 
-.dropdown-toggle { cursor: pointer; }
+.dropdown-toggle {
+  cursor: pointer;
+  border: none !important;
+  background: none !important;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+}
 .dropdown-toggle .drop-chevron {
   font-size: 0.65rem;
   margin-left: 0.15rem;
@@ -148,9 +155,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
-  background: var(--glass-sheen), var(--glass-nav);
-  background-blend-mode: screen, normal;
-  backdrop-filter: blur(34px) saturate(210%) contrast(1.06);
+  background: var(--glass-nav);
   border-radius: var(--radius-sm);
   padding: 0.35rem;
   gap: 0.15rem;
