@@ -151,13 +151,12 @@
   background: var(--glass-sheen), var(--glass-nav);
   background-blend-mode: screen, normal;
   backdrop-filter: blur(34px) saturate(210%) contrast(1.06);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   padding: 0.35rem;
   gap: 0.15rem;
   min-width: 150px;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 .nav-dropdown.open .dropdown-menu { display: flex; }
 
