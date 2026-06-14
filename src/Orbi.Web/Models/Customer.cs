@@ -1,9 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Orbi.Web.Models;
 
 public class Customer : BaseEntity
 {
+    [Required]
+    public string UserId { get; set; } = string.Empty;
+
     [Required]
     [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
@@ -22,8 +26,8 @@ public class Customer : BaseEntity
     [Phone]
     public string Phone { get; set; } = string.Empty;
 
-    [Required]
-    public string PasswordHash { get; set; } = string.Empty;
+    [NotMapped]
+    public string Password { get; set; } = string.Empty;
 
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     public ICollection<Order> Orders { get; set; } = new List<Order>();

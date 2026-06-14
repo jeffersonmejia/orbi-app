@@ -5,6 +5,9 @@ namespace Orbi.Web.Models;
 public class DeliveryDriver : BaseEntity
 {
     [Required]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
     [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
 

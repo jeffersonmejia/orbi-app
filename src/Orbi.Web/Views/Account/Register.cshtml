@@ -1,0 +1,138 @@
+@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+            <h3 class="mb-3">
+                <i class="bi bi-person-plus-fill" style="vertical-align: -4px; margin-right: 8px; font-size: 1.3rem;"></i>
+                Create Account
+            </h3>
+
+            <form asp-action="Register" method="post">
+                <div class="mb-3">
+                    <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" class="form-select" id="role-select" required>
+                        <option value="">-- Select a role --</option>
+                        @foreach (var role in (IEnumerable<SelectListItem>)ViewBag.Roles)
+                        {
+                            <option value="@role.Value">@role.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="FirstName" class="form-label"></label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="LastName" class="form-label"></label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div id="customer-fields" style="display: none;">
+                    <hr />
+                    <h5><i class="bi bi-geo-alt-fill"></i> Address (optional)</h5>
+                    <div class="mb-3">
+                        <label asp-for="StreetAddress" class="form-label"></label>
+                        <input asp-for="StreetAddress" class="form-control" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="City" class="form-label"></label>
+                            <input asp-for="City" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="State" class="form-label"></label>
+                            <input asp-for="State" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ZipCode" class="form-label"></label>
+                            <input asp-for="ZipCode" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Country" class="form-label"></label>
+                            <input asp-for="Country" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="store-fields" style="display: none;">
+                    <hr />
+                    <h5><i class="bi bi-shop"></i> Store Information</h5>
+                    <div class="mb-3">
+                        <label asp-for="StoreName" class="form-label"></label>
+                        <input asp-for="StoreName" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="StoreDescription" class="form-label"></label>
+                        <textarea asp-for="StoreDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="StoreCategoryId" class="form-label">Category</label>
+                        <select asp-for="StoreCategoryId" class="form-select" asp-items="@((SelectList)ViewBag.StoreCategories)">
+                            <option value="">-- Select a category --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="StreetAddress" class="form-label">Store Address</label>
+                        <input asp-for="StreetAddress" class="form-control" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">
+                    <i class="bi bi-person-plus-fill"></i> Register
+                </button>
+
+                <div class="text-center mt-3">
+                    <p class="mb-0">Already have an account? <a asp-action="Login">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('role-select').addEventListener('change', function () {
+            var role = this.value;
+            document.getElementById('customer-fields').style.display = role === 'Customer' ? 'block' : 'none';
+            document.getElementById('store-fields').style.display = role === 'StoreOwner' ? 'block' : 'none';
+        });
+    </script>
+}

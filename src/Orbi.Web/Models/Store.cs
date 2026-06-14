@@ -6,6 +6,9 @@ namespace Orbi.Web.Models;
 public class Store : BaseEntity
 {
     [Required]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
     public int CategoryId { get; set; }
 
     [Required]

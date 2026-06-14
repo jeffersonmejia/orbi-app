@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Models;
 
@@ -5,8 +6,34 @@ namespace Orbi.Web.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(AppDbContext context)
+    public static async Task SeedAsync(AppDbContext context, UserManager<ApplicationUser>? userManager = null, RoleManager<IdentityRole>? roleManager = null)
     {
+        if (roleManager != null)
+        {
+            var roles = new[] { "Customer", "DeliveryDriver", "StoreOwner", "Admin" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+
+        if (userManager != null)
+        {
+            if (await userManager.FindByEmailAsync("admin@orbi.com") == null)
+            {
+                var admin = new ApplicationUser
+                {
+                    UserName = "admin@orbi.com",
+                    Email = "admin@orbi.com",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(admin, "Admin123!");
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(admin, "Admin");
+            }
+        }
+
         if (await context.StoreCategories.AnyAsync()) return;
 
         // OrderStatus
@@ -47,22 +74,22 @@ public static class DbSeeder
         // DeliveryDriver
         var drivers = new List<DeliveryDriver>
         {
-            new() { FirstName = "Carlos", LastName = "Mendoza", Email = "carlos.mendoza@orbi.com", Phone = "3001112233", CurrentLatitude = 4.710989, CurrentLongitude = -74.072092, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
-            new() { FirstName = "Ana", LastName = "Lopez", Email = "ana.lopez@orbi.com", Phone = "3002223344", CurrentLatitude = 4.711500, CurrentLongitude = -74.073000, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
-            new() { FirstName = "Pedro", LastName = "Ramirez", Email = "pedro.ramirez@orbi.com", Phone = "3003334455", CurrentLatitude = 4.712000, CurrentLongitude = -74.071500, LastLocationUpdate = DateTime.UtcNow, IsAvailable = false },
-            new() { FirstName = "Maria", LastName = "Torres", Email = "maria.torres@orbi.com", Phone = "3004445566", CurrentLatitude = 4.710500, CurrentLongitude = -74.074000, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
-            new() { FirstName = "Jose", LastName = "Garcia", Email = "jose.garcia@orbi.com", Phone = "3005556677", CurrentLatitude = 4.713000, CurrentLongitude = -74.072500, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true }
+            new() { UserId = "", FirstName = "Carlos", LastName = "Mendoza", Email = "carlos.mendoza@orbi.com", Phone = "3001112233", CurrentLatitude = 4.710989, CurrentLongitude = -74.072092, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
+            new() { UserId = "", FirstName = "Ana", LastName = "Lopez", Email = "ana.lopez@orbi.com", Phone = "3002223344", CurrentLatitude = 4.711500, CurrentLongitude = -74.073000, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
+            new() { UserId = "", FirstName = "Pedro", LastName = "Ramirez", Email = "pedro.ramirez@orbi.com", Phone = "3003334455", CurrentLatitude = 4.712000, CurrentLongitude = -74.071500, LastLocationUpdate = DateTime.UtcNow, IsAvailable = false },
+            new() { UserId = "", FirstName = "Maria", LastName = "Torres", Email = "maria.torres@orbi.com", Phone = "3004445566", CurrentLatitude = 4.710500, CurrentLongitude = -74.074000, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true },
+            new() { UserId = "", FirstName = "Jose", LastName = "Garcia", Email = "jose.garcia@orbi.com", Phone = "3005556677", CurrentLatitude = 4.713000, CurrentLongitude = -74.072500, LastLocationUpdate = DateTime.UtcNow, IsAvailable = true }
         };
         context.DeliveryDrivers.AddRange(drivers);
 
-        // Customer
+        // Customer (UserId is empty string for seed data; real customers get it via registration)
         var customers = new List<Customer>
         {
-            new() { FirstName = "Laura", LastName = "Gomez", Email = "laura.gomez@email.com", Phone = "3101112233", PasswordHash = "hashed_password_1" },
-            new() { FirstName = "Andres", LastName = "Fernandez", Email = "andres.fernandez@email.com", Phone = "3102223344", PasswordHash = "hashed_password_2" },
-            new() { FirstName = "Sofia", LastName = "Martinez", Email = "sofia.martinez@email.com", Phone = "3103334455", PasswordHash = "hashed_password_3" },
-            new() { FirstName = "Diego", LastName = "Rodriguez", Email = "diego.rodriguez@email.com", Phone = "3104445566", PasswordHash = "hashed_password_4" },
-            new() { FirstName = "Valentina", LastName = "Lopez", Email = "valentina.lopez@email.com", Phone = "3105556677", PasswordHash = "hashed_password_5" }
+            new() { UserId = "", FirstName = "Laura", LastName = "Gomez", Email = "laura.gomez@email.com", Phone = "3101112233" },
+            new() { UserId = "", FirstName = "Andres", LastName = "Fernandez", Email = "andres.fernandez@email.com", Phone = "3102223344" },
+            new() { UserId = "", FirstName = "Sofia", LastName = "Martinez", Email = "sofia.martinez@email.com", Phone = "3103334455" },
+            new() { UserId = "", FirstName = "Diego", LastName = "Rodriguez", Email = "diego.rodriguez@email.com", Phone = "3104445566" },
+            new() { UserId = "", FirstName = "Valentina", LastName = "Lopez", Email = "valentina.lopez@email.com", Phone = "3105556677" }
         };
         context.Customers.AddRange(customers);
         await context.SaveChangesAsync();
@@ -82,11 +109,11 @@ public static class DbSeeder
         // Store
         var stores = new List<Store>
         {
-            new() { CategoryId = categories[0].Id, Name = "La Buena Mesa", Description = "Traditional Colombian cuisine.", Phone = "6011112233", Email = "contacto@labuenamesa.com", Address = "Calle 72 # 10-20", Latitude = 4.660000, Longitude = -74.058000 },
-            new() { CategoryId = categories[1].Id, Name = "Farmacia Salud Total", Description = "Full-service pharmacy and wellness store.", Phone = "6012223344", Email = "info@saludtotal.com", Address = "Av. Caracas # 32-15", Latitude = 4.630000, Longitude = -74.075000 },
-            new() { CategoryId = categories[2].Id, Name = "Supermercado El Ahorro", Description = "Low prices on all your grocery needs.", Phone = "6013334455", Email = "servicio@elahorro.com", Address = "Calle 80 # 20-40", Latitude = 4.690000, Longitude = -74.070000 },
-            new() { CategoryId = categories[3].Id, Name = "Panaderia Delicias", Description = "Freshly baked bread and pastries daily.", Phone = "6014445566", Email = "ventas@delicias.com", Address = "Carrera 11 # 55-30", Latitude = 4.675000, Longitude = -74.062000 },
-            new() { CategoryId = categories[4].Id, Name = "Cafe Aroma", Description = "Specialty coffee and artisan beverages.", Phone = "6015556677", Email = "hola@cafearoma.com", Address = "Calle 93 # 12-50", Latitude = 4.710000, Longitude = -74.055000 }
+            new() { UserId = "", CategoryId = categories[0].Id, Name = "La Buena Mesa", Description = "Traditional Colombian cuisine.", Phone = "6011112233", Email = "contacto@labuenamesa.com", Address = "Calle 72 # 10-20", Latitude = 4.660000, Longitude = -74.058000 },
+            new() { UserId = "", CategoryId = categories[1].Id, Name = "Farmacia Salud Total", Description = "Full-service pharmacy and wellness store.", Phone = "6012223344", Email = "info@saludtotal.com", Address = "Av. Caracas # 32-15", Latitude = 4.630000, Longitude = -74.075000 },
+            new() { UserId = "", CategoryId = categories[2].Id, Name = "Supermercado El Ahorro", Description = "Low prices on all your grocery needs.", Phone = "6013334455", Email = "servicio@elahorro.com", Address = "Calle 80 # 20-40", Latitude = 4.690000, Longitude = -74.070000 },
+            new() { UserId = "", CategoryId = categories[3].Id, Name = "Panaderia Delicias", Description = "Freshly baked bread and pastries daily.", Phone = "6014445566", Email = "ventas@delicias.com", Address = "Carrera 11 # 55-30", Latitude = 4.675000, Longitude = -74.062000 },
+            new() { UserId = "", CategoryId = categories[4].Id, Name = "Cafe Aroma", Description = "Specialty coffee and artisan beverages.", Phone = "6015556677", Email = "hola@cafearoma.com", Address = "Calle 93 # 12-50", Latitude = 4.710000, Longitude = -74.055000 }
         };
         context.Stores.AddRange(stores);
         await context.SaveChangesAsync();

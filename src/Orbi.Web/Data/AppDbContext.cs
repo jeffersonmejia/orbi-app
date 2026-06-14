@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Models;
 
 namespace Orbi.Web.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -30,6 +31,34 @@ public class AppDbContext : DbContext
         {
             entity.HasIndex(c => c.Email).IsUnique();
             entity.HasQueryFilter(c => c.IsActive);
+            entity.HasOne<ApplicationUser>()
+                  .WithMany()
+                  .HasForeignKey(c => c.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DeliveryDriver>(entity =>
+        {
+            entity.HasIndex(d => d.Email).IsUnique();
+            entity.HasQueryFilter(d => d.IsActive);
+            entity.HasOne<ApplicationUser>()
+                  .WithMany()
+                  .HasForeignKey(d => d.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Store>(entity =>
+        {
+            entity.HasOne(s => s.Category)
+                  .WithMany(sc => sc.Stores)
+                  .HasForeignKey(s => s.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(s => s.IsActive);
+            entity.HasOne<ApplicationUser>()
+                  .WithMany()
+                  .HasForeignKey(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Address>(entity =>
@@ -46,16 +75,6 @@ public class AppDbContext : DbContext
         {
             entity.HasIndex(sc => sc.Name).IsUnique();
             entity.HasQueryFilter(sc => sc.IsActive);
-        });
-
-        modelBuilder.Entity<Store>(entity =>
-        {
-            entity.HasOne(s => s.Category)
-                  .WithMany(sc => sc.Stores)
-                  .HasForeignKey(s => s.CategoryId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasQueryFilter(s => s.IsActive);
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -117,12 +136,6 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(od => od.IsActive);
-        });
-
-        modelBuilder.Entity<DeliveryDriver>(entity =>
-        {
-            entity.HasIndex(d => d.Email).IsUnique();
-            entity.HasQueryFilter(d => d.IsActive);
         });
 
         modelBuilder.Entity<OrderStatus>(entity =>
