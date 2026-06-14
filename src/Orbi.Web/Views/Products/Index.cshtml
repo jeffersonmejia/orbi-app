@@ -21,38 +21,41 @@
     </div>
     <div class="content-real">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>
+            <h3 style="margin: 0;">
                 <i class="bi bi-box-seam-fill" style="vertical-align: -4px; margin-right: 6px; font-size: 1.3rem;"></i>
                 Products
+                <small class="text-muted" style="font-weight: 400; font-size: 0.85rem;">(@Model.TotalCount total)</small>
             </h3>
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                Create New Product
-            </a>
-        </div>
-
-        <form method="get" class="d-flex gap-2 mb-3" id="search-form">
-            <div class="input-group" style="max-width: 320px;">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" name="searchTerm" class="form-control" placeholder="Search products..."
-                       value="@ViewBag.SearchTerm" />
+            <div class="d-flex gap-2 align-items-center">
+                <form method="get" class="d-flex gap-2" id="search-form" style="margin: 0;">
+                    <div class="input-group" style="max-width: 320px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="searchTerm" class="form-control" placeholder="Search products..."
+                               value="@ViewBag.SearchTerm" />
+                    </div>
+                    <select name="searchField" class="form-select" style="max-width: 140px;">
+                        <option value="name" selected="@(ViewBag.SearchField == "name" || ViewBag.SearchField == null)">Name</option>
+                        <option value="store" selected="@(ViewBag.SearchField == "store")">Store</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                    {
+                        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i></a>
+                    }
+                </form>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                    Create New Product
+                </a>
             </div>
-            <select name="searchField" class="form-select" style="max-width: 160px;">
-                <option value="name" selected="@(ViewBag.SearchField == "name" || ViewBag.SearchField == null)">Name</option>
-                <option value="store" selected="@(ViewBag.SearchField == "store")">Store</option>
-            </select>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
-            {
-                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-lg"></i></a>
-            }
-        </form>
+        </div>
 
         <div class="card" style="padding: 0;">
             <div style="overflow-x: auto;">
                 <table class="table">
                     <thead>
                         <tr>
+                            <th style="width: 50px;">No.</th>
                             <th>Name</th>
                             <th>Store</th>
                             <th>Price</th>
@@ -61,9 +64,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            int rowNum = (Model.PageIndex - 1) * Model.PageSize + 1;
+                        }
                         @foreach (var item in Model.Items)
                         {
                             <tr>
+                                <td>@rowNum</td>
                                 <td>@item.Name</td>
                                 <td>@item.StoreName</td>
                                 <td>@item.Price.ToString("C")</td>
@@ -84,6 +91,7 @@
                                     </form>
                                 </td>
                             </tr>
+                            rowNum++;
                         }
                     </tbody>
                 </table>

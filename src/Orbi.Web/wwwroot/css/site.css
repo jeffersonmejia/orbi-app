@@ -63,22 +63,11 @@ a:hover { color: var(--accent-hover); }
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
-  box-shadow: var(--shadow-md);
   position: fixed;
   top: 1rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
-}
-
-.island-brand {
-  color: var(--accent);
-  font-weight: 800;
-  font-size: 1rem;
-  padding: 0.35rem 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
 }
 
 .island-link {
@@ -95,6 +84,10 @@ a:hover { color: var(--accent-hover); }
 .island-link:hover {
   background: rgba(255,255,255,0.5);
   color: var(--text);
+}
+.island-link.active {
+  background: var(--accent);
+  color: #fff;
 }
 .island-link i {
   font-size: 0.95rem;
@@ -119,7 +112,7 @@ a:hover { color: var(--accent-hover); }
   gap: 0.4rem;
   line-height: 1;
 }
-.btn:hover { background: var(--glass-strong); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:hover { background: var(--glass-strong); transform: translateY(-1px); }
 .btn:active { transform: scale(0.97); }
 .btn i { font-size: 0.95rem; line-height: 1; }
 
@@ -166,7 +159,6 @@ a:hover { color: var(--accent-hover); }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 .card-header {
   padding: 0.85rem 1.15rem;
@@ -368,12 +360,7 @@ footer.footer {
 .island-link:hover i { transform: scale(1.15); }
 .btn:hover i { transform: scale(1.15); }
 
-/* ─── Nav brand icon floating ─── */
-.island-brand i { animation: float 3s ease-in-out infinite; display: inline-block; }
-
 /* ─── Card hover lift ─── */
-.card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-.card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
 
 /* ─── Table row slide-in ─── */
 .table tbody tr { animation: fadeIn 0.3s ease both; }
