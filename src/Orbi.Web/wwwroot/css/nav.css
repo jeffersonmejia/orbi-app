@@ -130,34 +130,61 @@
   }
 }
 
-/* ─── Manage toggle submenu ─── */
-.manage-toggle { cursor: pointer; }
-.manage-toggle .manage-chevron {
-  font-size: 0.7rem;
-  margin-left: 0.2rem;
+/* ─── Dropdown submenus ─── */
+.nav-dropdown { position: relative; }
+
+.dropdown-toggle { cursor: pointer; }
+.dropdown-toggle .drop-chevron {
+  font-size: 0.65rem;
+  margin-left: 0.15rem;
   transition: transform 0.25s ease;
 }
-.manage-open .manage-toggle .manage-chevron { transform: rotate(180deg); }
-.manage-links { display: none; }
-.manage-open .manage-links { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+.nav-dropdown.open .dropdown-toggle .drop-chevron { transform: rotate(180deg); }
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--glass-sheen), var(--glass-nav);
+  background-blend-mode: screen, normal;
+  backdrop-filter: blur(34px) saturate(210%) contrast(1.06);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.35rem;
+  gap: 0.15rem;
+  min-width: 150px;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.nav-dropdown.open .dropdown-menu { display: flex; }
+
+.dropdown-menu .island-link {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  white-space: nowrap;
+}
+.dropdown-menu .island-link i { font-size: 0.9rem; width: 1.2rem; text-align: center; }
 
 @media (min-width: 901px) {
-  .manage-open .manage-links {
-    flex-direction: column;
-    align-items: stretch;
+  .nav-dropdown { position: relative; }
+  .dropdown-menu {
+    top: 0;
+    left: 100%;
+    transform: none;
+    margin-left: 0.5rem;
   }
 }
 
 @media (max-width: 767px) {
-  .manage-open .manage-links {
-    justify-content: center;
-  }
-  .manage-open .manage-links .island-link {
-    font-size: 0.6rem;
-    padding: 0.25rem 0.35rem;
-  }
-  .manage-open .manage-links .island-link i {
-    font-size: 0.95rem;
+  .dropdown-menu {
+    bottom: 100%;
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.3rem;
   }
 }
 
