@@ -1,0 +1,12 @@
+@model StoreCategoryViewModel
+@{ ViewData["Title"] = "Store Category Details"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-eye-fill" style="font-size:1.3rem"></i><h3 style="margin:0">Store Category Details</h3></div><hr />
+<div class="card"><div class="card-body">
+<dl class="row mb-0">
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Name)</dt><dd class="col-sm-9">@Model.Name</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Description)</dt><dd class="col-sm-9">@(Model.Description??"N/A")</dd>
+</dl>
+</div><div class="card-footer">
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning"><i class="bi bi-pencil-fill"></i> Edit</a>
+<a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div></div>

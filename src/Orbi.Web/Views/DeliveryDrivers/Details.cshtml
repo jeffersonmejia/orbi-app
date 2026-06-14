@@ -1,0 +1,16 @@
+@model DeliveryDriverViewModel
+@{ ViewData["Title"] = "Delivery Driver Details"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-eye-fill" style="font-size:1.3rem"></i><h3 style="margin:0">Delivery Driver Details</h3></div><hr />
+<div class="card"><div class="card-body">
+<dl class="row mb-0">
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.FullName)</dt><dd class="col-sm-9">@Model.FullName</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Email)</dt><dd class="col-sm-9">@Model.Email</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Phone)</dt><dd class="col-sm-9">@Model.Phone</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.CurrentLatitude)</dt><dd class="col-sm-9">@Model.CurrentLatitude.ToString("F6")</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.CurrentLongitude)</dt><dd class="col-sm-9">@Model.CurrentLongitude.ToString("F6")</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.IsAvailable)</dt><dd class="col-sm-9">@(Model.IsAvailable?"Yes":"No")</dd>
+</dl>
+</div><div class="card-footer">
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning"><i class="bi bi-pencil-fill"></i> Edit</a>
+<a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div></div>

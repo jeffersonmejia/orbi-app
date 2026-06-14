@@ -1,0 +1,18 @@
+@model AddressViewModel
+@{ ViewData["Title"] = "Address Details"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-eye-fill" style="font-size:1.3rem"></i><h3 style="margin:0">Address Details</h3></div><hr />
+<div class="card"><div class="card-body">
+<dl class="row mb-0">
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.CustomerName)</dt><dd class="col-sm-9">@Model.CustomerName</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Street)</dt><dd class="col-sm-9">@Model.Street</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.City)</dt><dd class="col-sm-9">@Model.City</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.State)</dt><dd class="col-sm-9">@Model.State</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.ZipCode)</dt><dd class="col-sm-9">@Model.ZipCode</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Country)</dt><dd class="col-sm-9">@Model.Country</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Latitude)</dt><dd class="col-sm-9">@(Model.Latitude?.ToString("F6")??"N/A")</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Longitude)</dt><dd class="col-sm-9">@(Model.Longitude?.ToString("F6")??"N/A")</dd>
+</dl>
+</div><div class="card-footer">
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning"><i class="bi bi-pencil-fill"></i> Edit</a>
+<a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div></div>

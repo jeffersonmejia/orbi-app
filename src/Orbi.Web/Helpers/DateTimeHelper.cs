@@ -11,11 +11,7 @@ public static class DateTimeHelper
             return $"{(int)diff.TotalSeconds}s";
 
         if (diff.TotalMinutes < 60)
-        {
-            var m = (int)diff.TotalMinutes;
-            var s = diff.Seconds;
-            return s > 0 ? $"{m}m {s}s" : $"{m}m";
-        }
+            return $"{(int)diff.TotalMinutes}m";
 
         if (diff.TotalHours < 24)
         {

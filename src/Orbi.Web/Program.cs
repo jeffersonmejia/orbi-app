@@ -31,6 +31,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<AddressService>();
+builder.Services.AddScoped<StoreService>();
+builder.Services.AddScoped<StoreCategoryService>();
+builder.Services.AddScoped<OrderStatusService>();
+builder.Services.AddScoped<DeliveryDriverService>();
+builder.Services.AddScoped<PaymentMethodService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<ReviewService>();
 
 var app = builder.Build();
 

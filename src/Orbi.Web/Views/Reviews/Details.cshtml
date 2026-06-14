@@ -1,0 +1,14 @@
+@model ReviewViewModel
+@{ ViewData["Title"] = "Review Details"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-eye-fill" style="font-size:1.3rem"></i><h3 style="margin:0">Review Details</h3></div><hr />
+<div class="card"><div class="card-body">
+<dl class="row mb-0">
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.CustomerName)</dt><dd class="col-sm-9">@Model.CustomerName</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.StoreName)</dt><dd class="col-sm-9">@Model.StoreName</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Rating)</dt><dd class="col-sm-9">@for(int s=1;s<=5;s++){<i class="bi bi-star@(s<=Model.Rating?"-fill":"") text-accent" style="font-size:1.1rem"></i>}</dd>
+<dt class="col-sm-3">@Html.DisplayNameFor(m=>m.Comment)</dt><dd class="col-sm-9">@(Model.Comment??"N/A")</dd>
+</dl>
+</div><div class="card-footer">
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning"><i class="bi bi-pencil-fill"></i> Edit</a>
+<a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+</div></div>

@@ -37,6 +37,42 @@
             <i class="bi bi-bag-fill"></i>
             Orders
         </a>
+        <a class="island-link @(currentController == "Stores" ? "active" : "")" asp-area="" asp-controller="Stores" asp-action="Index">
+            <i class="bi bi-shop"></i>
+            Stores
+        </a>
+        <a class="island-link @(currentController == "StoreCategories" ? "active" : "")" asp-area="" asp-controller="StoreCategories" asp-action="Index">
+            <i class="bi bi-tags-fill"></i>
+            Categories
+        </a>
+        <a class="island-link @(currentController == "Customers" ? "active" : "")" asp-area="" asp-controller="Customers" asp-action="Index">
+            <i class="bi bi-people-fill"></i>
+            Customers
+        </a>
+        <a class="island-link @(currentController == "Addresses" ? "active" : "")" asp-area="" asp-controller="Addresses" asp-action="Index">
+            <i class="bi bi-geo-alt-fill"></i>
+            Addresses
+        </a>
+        <a class="island-link @(currentController == "DeliveryDrivers" ? "active" : "")" asp-area="" asp-controller="DeliveryDrivers" asp-action="Index">
+            <i class="bi bi-truck"></i>
+            Drivers
+        </a>
+        <a class="island-link @(currentController == "Payments" ? "active" : "")" asp-area="" asp-controller="Payments" asp-action="Index">
+            <i class="bi bi-cash-stack"></i>
+            Payments
+        </a>
+        <a class="island-link @(currentController == "PaymentMethods" ? "active" : "")" asp-area="" asp-controller="PaymentMethods" asp-action="Index">
+            <i class="bi bi-credit-card-2-front-fill"></i>
+            Pay Methods
+        </a>
+        <a class="island-link @(currentController == "Reviews" ? "active" : "")" asp-area="" asp-controller="Reviews" asp-action="Index">
+            <i class="bi bi-chat-square-text-fill"></i>
+            Reviews
+        </a>
+        <a class="island-link @(currentController == "OrderStatuses" ? "active" : "")" asp-area="" asp-controller="OrderStatuses" asp-action="Index">
+            <i class="bi bi-signpost-2-fill"></i>
+            Statuses
+        </a>
         <div class="aside-divider"></div>
         @if (SignInManager.IsSignedIn(User))
         {

@@ -1,0 +1,14 @@
+@model ReviewViewModel
+@{ ViewData["Title"] = "Create Review"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-plus-lg" style="font-size:1.3rem"></i><h3 style="margin:0">Create Review</h3></div><hr />
+<div class="row"><div class="col-md-6"><div class="card"><div class="card-body">
+<form asp-action="Create">
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3"><label asp-for="CustomerId" class="form-label"></label><select asp-for="CustomerId" asp-items="@(ViewBag.CustomerId as SelectList)" class="form-select"><option value="">-- Select Customer --</option></select><span asp-validation-for="CustomerId" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="StoreId" class="form-label"></label><select asp-for="StoreId" asp-items="@(ViewBag.StoreId as SelectList)" class="form-select"><option value="">-- Select Store --</option></select><span asp-validation-for="StoreId" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Rating" class="form-label"></label><select asp-for="Rating" class="form-select"><option value="">-- Select Rating --</option>@for(int i=1;i<=5;i++){<option value="@i">@i</option>}</select><span asp-validation-for="Rating" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Comment" class="form-label"></label><textarea asp-for="Comment" class="form-control" rows="3"></textarea><span asp-validation-for="Comment" class="text-danger"></span></div>
+<div class="mt-4 d-flex gap-2"><button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Create</button><a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a></div>
+</form>
+</div></div></div></div>
+@section Scripts { @await Html.PartialAsync("_ValidationScriptsPartial") }

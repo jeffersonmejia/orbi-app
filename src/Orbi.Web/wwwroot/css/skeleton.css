@@ -91,7 +91,8 @@
   border-radius: 999px;
 }
 
-.skeleton-active .content-real { opacity: 0; pointer-events: none; }
-.skeleton-active .skeleton-wrap { display: block; }
-.skeleton-wrap { display: none; }
-.content-real { transition: opacity 0.4s ease; }
+/* --- skeleton visible by default, content hidden --- */
+.skeleton-wrap { display: block; }
+.content-real { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+.content-real.revealed { opacity: 1; pointer-events: auto; }
+.skeleton-wrap.hidden { display: none; }

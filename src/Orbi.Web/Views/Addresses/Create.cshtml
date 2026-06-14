@@ -1,0 +1,15 @@
+@model AddressViewModel
+@{ ViewData["Title"] = "Create Address"; }
+<div class="d-flex align-items-center gap-2 mb-3"><i class="bi bi-plus-lg" style="font-size:1.3rem"></i><h3 style="margin:0">Create Address</h3></div><hr />
+<div class="row"><div class="col-md-6"><div class="card"><div class="card-body">
+<form asp-action="Create">
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3"><label asp-for="CustomerId" class="form-label"></label><select asp-for="CustomerId" asp-items="@(ViewBag.CustomerId as SelectList)" class="form-select"><option value="">-- Select Customer --</option></select><span asp-validation-for="CustomerId" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Street" class="form-label"></label><input asp-for="Street" class="form-control" /><span asp-validation-for="Street" class="text-danger"></span></div>
+<div class="row"><div class="col-md-6 mb-3"><label asp-for="City" class="form-label"></label><input asp-for="City" class="form-control" /><span asp-validation-for="City" class="text-danger"></span></div><div class="col-md-6 mb-3"><label asp-for="State" class="form-label"></label><input asp-for="State" class="form-control" /><span asp-validation-for="State" class="text-danger"></span></div></div>
+<div class="row"><div class="col-md-6 mb-3"><label asp-for="ZipCode" class="form-label"></label><input asp-for="ZipCode" class="form-control" /><span asp-validation-for="ZipCode" class="text-danger"></span></div><div class="col-md-6 mb-3"><label asp-for="Country" class="form-label"></label><input asp-for="Country" class="form-control" /><span asp-validation-for="Country" class="text-danger"></span></div></div>
+<div class="row"><div class="col-md-6 mb-3"><label asp-for="Latitude" class="form-label"></label><input asp-for="Latitude" class="form-control" /></div><div class="col-md-6 mb-3"><label asp-for="Longitude" class="form-label"></label><input asp-for="Longitude" class="form-control" /></div></div>
+<div class="mt-4 d-flex gap-2"><button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Create</button><a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a></div>
+</form>
+</div></div></div></div>
+@section Scripts { @await Html.PartialAsync("_ValidationScriptsPartial") }
