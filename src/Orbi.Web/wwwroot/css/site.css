@@ -87,6 +87,9 @@ footer.footer {
 
 .text-muted { color: var(--color-text-muted) !important; }
 .text-danger { color: #ef4444 !important; }
+.text-accent { color: var(--accent) !important; }
+
+.icon-accent { color: var(--accent); }
 
 .alert {
   border: 1px solid var(--color-border);

@@ -48,6 +48,11 @@
   display: inline-block;
 }
 .island-link:hover i { transform: scale(1.15); }
+.island-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.island-link.active i { color: var(--accent); }
 
 .island-link--static {
   cursor: default;
@@ -78,34 +83,34 @@
 @media (min-width: 901px) {
   body {
     padding-top: 0;
-    padding-left: 280px;
+    padding-left: 0;
   }
 
   .island-nav {
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 260px;
+    top: 50%;
+    left: 1.2rem;
+    transform: translateY(-50%);
+    width: max-content;
     flex-direction: column;
     align-items: stretch;
-    border-radius: 0;
-    border: none;
-    border-right: 1px solid var(--color-border);
-    padding: 1.5rem 0.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    padding: 0.5rem;
     gap: 0.2rem;
-    transform: none;
-    justify-content: flex-start;
     background: var(--glass-sheen), var(--glass-nav);
     background-blend-mode: screen, normal;
   }
 
   .island-link {
-    border-radius: var(--radius-sm);
-    padding: 0.6rem 0.85rem;
-    font-size: 0.9rem;
-    justify-content: center;
-    text-align: center;
+    min-width: 7.4rem;
+    min-height: 3rem;
+    border-radius: var(--radius-pill);
+    padding: 0.68rem 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 400;
+    justify-content: flex-start;
+    text-align: left;
   }
 
   .island-link i {
@@ -114,10 +119,14 @@
     text-align: center;
   }
 
+  .island-link.active {
+    font-weight: 700;
+  }
+
   .aside-divider {
     width: auto !important;
     height: 1px !important;
-    margin: 0.5rem 0.75rem !important;
+    margin: 0.4rem 0.75rem !important;
   }
 }
 

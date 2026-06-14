@@ -44,7 +44,7 @@
                 <i class="bi bi-person-circle"></i>
                 @User.Identity!.Name
             </span>
-            <form asp-controller="Account" asp-action="Logout" method="post" style="display: inline;">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                 <button type="submit" class="island-link island-link--btn">
                     <i class="bi bi-box-arrow-right"></i>
                     Sign Out
@@ -68,9 +68,9 @@
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle-fill" style="margin-right: 0.3rem;"></i>
+                <i class="bi bi-check-circle-fill me-1"></i>
                 @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button>
             </div>
         }
         <main role="main">
