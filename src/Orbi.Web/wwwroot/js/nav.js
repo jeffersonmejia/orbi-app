@@ -1,4 +1,4 @@
-// Nav link hover effect
+// Nav hover icon pulse
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.island-link').forEach(link => {
     link.addEventListener('mouseenter', function () {

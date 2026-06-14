@@ -1,73 +1,63 @@
-/* ─── Keyframes ─── */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ─── Smooth iOS-style fade animations ─── */
 @keyframes fadeIn {
-  from { opacity: 0; }
+  from { opacity: 0.3; }
   to   { opacity: 1; }
 }
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
   to   { opacity: 1; transform: scale(1); }
 }
+
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-30px); }
+  from { opacity: 0; transform: translateX(-20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
+  from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-6px); }
 }
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.6; }
 }
+
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 /* ─── Utility Classes ─── */
-.animate-fade-in-up { animation: fadeInUp 0.5s ease both; }
-.animate-fade-in    { animation: fadeIn 0.4s ease both; }
-.animate-scale-in   { animation: scaleIn 0.35s ease both; }
-.animate-slide-left { animation: slideInLeft 0.4s ease both; }
-.animate-slide-right{ animation: slideInRight 0.4s ease both; }
+.animate-fade-in    { animation: fadeIn 0.3s ease both; }
+.animate-fade-in-up { animation: fadeInUp 0.35s ease both; }
+.animate-fade-scale { animation: fadeInScale 0.35s ease both; }
+.animate-slide-left { animation: slideInLeft 0.3s ease both; }
+.animate-slide-right{ animation: slideInRight 0.3s ease both; }
 .animate-float      { animation: float 3s ease-in-out infinite; }
 .animate-spin       { animation: spin 0.6s linear infinite; }
 .animate-pulse      { animation: pulse 2s ease-in-out infinite; }
-.animate-shimmer    { animation: shimmer 2s linear infinite; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); background-size: 200% 100%; }
 
-/* ─── Staggered Entrance ─── */
-[data-delay="1"] { animation-delay: 0.1s; }
-[data-delay="2"] { animation-delay: 0.2s; }
-[data-delay="3"] { animation-delay: 0.3s; }
-[data-delay="4"] { animation-delay: 0.4s; }
-[data-delay="5"] { animation-delay: 0.5s; }
-[data-delay="6"] { animation-delay: 0.6s; }
-
-/* ─── Table row staggered entrance ─── */
-.table tbody tr:nth-child(1) { animation-delay: 0s; }
-.table tbody tr:nth-child(2) { animation-delay: 0.05s; }
-.table tbody tr:nth-child(3) { animation-delay: 0.1s; }
-.table tbody tr:nth-child(4) { animation-delay: 0.15s; }
-.table tbody tr:nth-child(5) { animation-delay: 0.2s; }
-.table tbody tr:nth-child(6) { animation-delay: 0.25s; }
-.table tbody tr:nth-child(7) { animation-delay: 0.3s; }
-.table tbody tr:nth-child(8) { animation-delay: 0.35s; }
-.table tbody tr:nth-child(9) { animation-delay: 0.4s; }
-.table tbody tr:nth-child(10){ animation-delay: 0.45s; }
+/* ─── Card stagger via CSS (no JS needed) ─── */
+.card { animation: fadeInUp 0.35s ease both; }
 
 /* ─── Success alert entrance ─── */
-.alert-success { animation: slideInLeft 0.35s ease both; }
+.alert-success { animation: slideInLeft 0.3s ease both; }
 
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {

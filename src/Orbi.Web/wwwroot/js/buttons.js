@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         left: ${x - 10}px; top: ${y - 10}px;
         pointer-events: none;
       `;
-      ripple.style.position = 'absolute';
       this.style.position = 'relative';
       this.style.overflow = 'hidden';
       this.appendChild(ripple);
