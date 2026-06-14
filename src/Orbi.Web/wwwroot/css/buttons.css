@@ -32,39 +32,39 @@
 .btn:hover i { transform: scale(1.15); }
 
 .btn-primary {
-  background: var(--purple-500);
-  color: #fff;
-  border-color: var(--purple-500);
+  background: var(--purple-500) !important;
+  color: #fff !important;
+  border-color: var(--purple-500) !important;
 }
-.btn-primary:hover { background: var(--purple-400); color: #fff; }
+.btn-primary:hover { background: var(--purple-400) !important; color: #fff !important; }
 
 .btn-success {
-  background: var(--purple-600);
-  color: #fff;
-  border-color: var(--purple-600);
+  background: var(--purple-600) !important;
+  color: #fff !important;
+  border-color: var(--purple-600) !important;
 }
-.btn-success:hover { background: var(--purple-500); color: #fff; }
+.btn-success:hover { background: var(--purple-500) !important; color: #fff !important; }
 
 .btn-warning {
-  background: var(--purple-300);
-  color: var(--purple-800);
-  border-color: var(--purple-300);
+  background: var(--purple-300) !important;
+  color: var(--purple-800) !important;
+  border-color: var(--purple-300) !important;
 }
-.btn-warning:hover { background: var(--purple-400); color: #fff; }
+.btn-warning:hover { background: var(--purple-400) !important; color: #fff !important; }
 
 .btn-danger {
-  background: var(--purple-700);
-  color: #fff;
-  border-color: var(--purple-700);
+  background: var(--purple-700) !important;
+  color: #fff !important;
+  border-color: var(--purple-700) !important;
 }
-.btn-danger:hover { background: var(--purple-600); color: #fff; }
+.btn-danger:hover { background: var(--purple-600) !important; color: #fff !important; }
 
 .btn-info {
-  background: var(--purple-400);
-  color: var(--purple-900);
-  border-color: var(--purple-400);
+  background: var(--purple-400) !important;
+  color: var(--purple-900) !important;
+  border-color: var(--purple-400) !important;
 }
-.btn-info:hover { background: var(--purple-300); color: var(--purple-900); }
+.btn-info:hover { background: var(--purple-300) !important; color: var(--purple-900) !important; }
 
 .btn-secondary {
   background: var(--glass-sheen), var(--color-surface);
