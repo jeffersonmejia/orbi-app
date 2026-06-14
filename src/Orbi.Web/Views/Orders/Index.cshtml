@@ -61,7 +61,7 @@
                             <th>Store</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th>Date</th>
+                            <th>Updated at</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -90,7 +90,7 @@
                                         @item.OrderStatusName
                                     </span>
                                 </td>
-                                <td>@item.OrderDate.ToString("g")</td>
+                                <td>@item.OrderDate.ToRelativeTime()</td>
                                 <td class="text-center">
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Details">
                                         <i class="bi bi-eye-fill"></i>

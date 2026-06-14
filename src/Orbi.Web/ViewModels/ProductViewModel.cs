@@ -37,5 +37,7 @@ public class ProductViewModel
     [Display(Name = "Store Name")]
     public string? StoreName { get; set; }
 
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     public bool IsActive { get; set; } = true;
 }

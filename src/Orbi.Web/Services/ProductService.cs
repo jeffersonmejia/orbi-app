@@ -60,6 +60,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
                 Stock = p.Stock,
                 ImageUrl = p.ImageUrl,
                 StoreName = p.Store.Name,
+                UpdatedAt = p.UpdatedAt,
                 IsActive = p.IsActive
             });
     }
@@ -82,6 +83,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
             Stock = product.Stock,
             ImageUrl = product.ImageUrl,
             StoreName = product.Store.Name,
+            UpdatedAt = product.UpdatedAt,
             IsActive = product.IsActive
         };
     }

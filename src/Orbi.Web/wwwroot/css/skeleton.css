@@ -1,0 +1,126 @@
+/* ─── Skeleton Loader ─── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -300px 0; }
+  100% { background-position: calc(300px + 100%) 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 300px 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-title {
+  height: 22px;
+  width: 55%;
+  border-radius: 8px;
+}
+
+.skeleton-text {
+  height: 13px;
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+.skeleton-text:last-child { width: 65%; }
+
+.skeleton-card {
+  height: 200px;
+  border-radius: var(--radius);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-card .skeleton-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.skeleton-card .skeleton-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.skeleton-card .skeleton-line-lg {
+  height: 18px;
+  width: 75%;
+  border-radius: 6px;
+  margin: 0 auto;
+}
+
+.skeleton-card .skeleton-line-sm {
+  height: 11px;
+  width: 55%;
+  border-radius: 6px;
+  margin: 0 auto;
+}
+
+.skeleton-card .skeleton-btn-block {
+  height: 38px;
+  width: 60%;
+  border-radius: 999px;
+  margin: 6px auto 0;
+}
+
+.skeleton-table { padding: 0; }
+
+.skeleton-table .skeleton-th {
+  height: 36px;
+  width: 100%;
+  border-radius: 0;
+  margin-bottom: 2px;
+}
+
+.skeleton-table .skeleton-tr {
+  height: 50px;
+  width: 100%;
+  border-radius: 0;
+  margin-bottom: 2px;
+}
+.skeleton-table .skeleton-tr:last-child { margin-bottom: 0; }
+
+.skeleton-form {
+  height: 340px;
+  border-radius: var(--radius);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.skeleton-form .skeleton-field {
+  height: 38px;
+  width: 100%;
+  border-radius: 10px;
+}
+.skeleton-form .skeleton-label {
+  height: 12px;
+  width: 30%;
+  border-radius: 6px;
+}
+.skeleton-form .skeleton-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.skeleton-form .skeleton-btn-row .skeleton-field {
+  width: 100px;
+  height: 38px;
+  border-radius: 999px;
+}
+
+/* ─── Skeleton wrapper ─── */
+.skeleton-active .content-real { opacity: 0; pointer-events: none; }
+.skeleton-active .skeleton-wrap { display: block; }
+.skeleton-wrap { display: none; }
+
+/* ─── Content reveal after skeleton ─── */
+.content-real { transition: opacity 0.4s ease; }
