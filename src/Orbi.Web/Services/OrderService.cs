@@ -49,6 +49,7 @@ public class OrderService : IEntityService<Order, OrderViewModel>
     private IQueryable<OrderViewModel> GetAllQuery()
     {
         return _context.Orders
+            .AsNoTracking()
             .Include(o => o.Customer)
             .Include(o => o.Store)
             .Include(o => o.DeliveryDriver)
@@ -79,6 +80,7 @@ public class OrderService : IEntityService<Order, OrderViewModel>
     public async Task<OrderViewModel?> GetByIdAsync(int id)
     {
         var order = await _context.Orders
+            .AsNoTracking()
             .Include(o => o.Customer)
             .Include(o => o.Store)
             .Include(o => o.DeliveryDriver)

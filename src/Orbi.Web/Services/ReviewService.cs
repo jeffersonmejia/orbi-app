@@ -48,6 +48,7 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
     private IQueryable<ReviewViewModel> GetAllQuery()
     {
         return _context.Reviews
+            .AsNoTracking()
             .Include(r => r.Customer)
             .Include(r => r.Store)
             .Where(r => r.IsActive)
@@ -68,6 +69,7 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
     public async Task<ReviewViewModel?> GetByIdAsync(int id)
     {
         var review = await _context.Reviews
+            .AsNoTracking()
             .Include(r => r.Customer)
             .Include(r => r.Store)
             .FirstOrDefaultAsync(r => r.Id == id && r.IsActive);

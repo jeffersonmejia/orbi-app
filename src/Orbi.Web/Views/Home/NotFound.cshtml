@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Not Found";
+}
+
+<div class="text-center py-5">
+    <i class="bi bi-search" style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;"></i>
+    <h1 class="display-5 fw-bold">Not Found</h1>
+    <p class="lead mb-4">
+        The page or resource you requested could not be found.
+    </p>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+            <i class="bi bi-house-fill"></i>
+            Go Home
+        </a>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-box-seam-fill"></i>
+            Browse Products
+        </a>
+    </div>
+</div>
+

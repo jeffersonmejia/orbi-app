@@ -49,6 +49,7 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
     private IQueryable<PaymentViewModel> GetAllQuery()
     {
         return _context.Payments
+            .AsNoTracking()
             .Include(p => p.Order)
             .Include(p => p.PaymentMethod)
             .Where(p => p.IsActive)
@@ -71,6 +72,7 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
     public async Task<PaymentViewModel?> GetByIdAsync(int id)
     {
         var payment = await _context.Payments
+            .AsNoTracking()
             .Include(p => p.Order)
             .Include(p => p.PaymentMethod)
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);

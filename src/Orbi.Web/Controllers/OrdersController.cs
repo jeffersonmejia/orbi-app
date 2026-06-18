@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Orbi.Web.Data;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
@@ -11,11 +12,13 @@ public class OrdersController : Controller
 {
     private readonly OrderService _orderService;
     private readonly AppDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public OrdersController(OrderService orderService, AppDbContext context)
+    public OrdersController(OrderService orderService, AppDbContext context, IMemoryCache cache)
     {
         _orderService = orderService;
         _context = context;
+        _cache = cache;
     }
 
     public async Task<IActionResult> Index(
@@ -112,8 +115,10 @@ public class OrdersController : Controller
     private async Task PopulateDropDownListsAsync(object? selectedValues = null)
     {
         var customers = await _context.Customers
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.FirstName)
+            .Take(200)
             .Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
@@ -122,8 +127,10 @@ public class OrdersController : Controller
             .ToListAsync();
 
         var stores = await _context.Stores
+            .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)
+            .Take(200)
             .Select(s => new SelectListItem
             {
                 Value = s.Id.ToString(),
@@ -132,8 +139,10 @@ public class OrdersController : Controller
             .ToListAsync();
 
         var drivers = await _context.DeliveryDrivers
+            .AsNoTracking()
             .Where(d => d.IsActive && d.IsAvailable)
             .OrderBy(d => d.FirstName)
+            .Take(200)
             .Select(d => new SelectListItem
             {
                 Value = d.Id.ToString(),
@@ -142,7 +151,11 @@ public class OrdersController : Controller
             .ToListAsync();
         drivers.Insert(0, new SelectListItem { Value = "", Text = "-- No Driver --" });
 
-        var orderStatuses = await _context.OrderStatuses
+        var orderStatuses = await _cache.GetOrCreateAsync("dropdown:order-statuses", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            return await _context.OrderStatuses
+            .AsNoTracking()
             .OrderBy(os => os.Name)
             .Select(os => new SelectListItem
             {
@@ -150,10 +163,13 @@ public class OrdersController : Controller
                 Text = os.Name
             })
             .ToListAsync();
+        });
 
         var addresses = await _context.Addresses
+            .AsNoTracking()
             .Where(a => a.IsActive)
             .OrderBy(a => a.Street)
+            .Take(200)
             .Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
@@ -162,8 +178,10 @@ public class OrdersController : Controller
             .ToListAsync();
 
         var products = await _context.Products
+            .AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
+            .Take(200)
             .Select(p => new SelectListItem
             {
                 Value = p.Id.ToString(),

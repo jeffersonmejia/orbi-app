@@ -47,6 +47,7 @@ public class AddressService : IEntityService<Address, AddressViewModel>
     private IQueryable<AddressViewModel> GetAllQuery()
     {
         return _context.Addresses
+            .AsNoTracking()
             .Include(a => a.Customer)
             .Where(a => a.IsActive)
             .OrderBy(a => a.City)
@@ -71,6 +72,7 @@ public class AddressService : IEntityService<Address, AddressViewModel>
     public async Task<AddressViewModel?> GetByIdAsync(int id)
     {
         var address = await _context.Addresses
+            .AsNoTracking()
             .Include(a => a.Customer)
             .FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
 

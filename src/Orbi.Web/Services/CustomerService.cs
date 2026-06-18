@@ -47,6 +47,7 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
     private IQueryable<CustomerViewModel> GetAllQuery()
     {
         return _context.Customers
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)
             .ThenBy(c => c.FirstName)
@@ -65,6 +66,7 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
     public async Task<CustomerViewModel?> GetByIdAsync(int id)
     {
         var customer = await _context.Customers
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
         if (customer == null) return null;

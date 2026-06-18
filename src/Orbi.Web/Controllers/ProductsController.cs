@@ -112,8 +112,10 @@ public class ProductsController : Controller
     private async Task PopulateStoresDropDownListAsync(object? selectedStore = null)
     {
         var stores = await _context.Stores
+            .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)
+            .Take(200)
             .Select(s => new SelectListItem
             {
                 Value = s.Id.ToString(),

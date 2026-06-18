@@ -47,6 +47,7 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
     private IQueryable<DeliveryDriverViewModel> GetAllQuery()
     {
         return _context.DeliveryDrivers
+            .AsNoTracking()
             .Where(d => d.IsActive)
             .OrderBy(d => d.LastName)
             .ThenBy(d => d.FirstName)
@@ -69,6 +70,7 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
     public async Task<DeliveryDriverViewModel?> GetByIdAsync(int id)
     {
         var driver = await _context.DeliveryDrivers
+            .AsNoTracking()
             .FirstOrDefaultAsync(d => d.Id == id && d.IsActive);
 
         if (driver == null) return null;

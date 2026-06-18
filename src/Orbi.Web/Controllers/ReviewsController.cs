@@ -116,9 +116,11 @@ public class ReviewsController : Controller
     private async Task PopulateCustomersDropDownListAsync(object? selectedCustomer = null)
     {
         var customers = await _context.Customers
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)
             .ThenBy(c => c.FirstName)
+            .Take(200)
             .Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
@@ -132,8 +134,10 @@ public class ReviewsController : Controller
     private async Task PopulateStoresDropDownListAsync(object? selectedStore = null)
     {
         var stores = await _context.Stores
+            .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)
+            .Take(200)
             .Select(s => new SelectListItem
             {
                 Value = s.Id.ToString(),

@@ -46,6 +46,7 @@ public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodV
     private IQueryable<PaymentMethodViewModel> GetAllQuery()
     {
         return _context.PaymentMethods
+            .AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .Select(p => new PaymentMethodViewModel
@@ -61,6 +62,7 @@ public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodV
     public async Task<PaymentMethodViewModel?> GetByIdAsync(int id)
     {
         var method = await _context.PaymentMethods
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
 
         if (method == null) return null;

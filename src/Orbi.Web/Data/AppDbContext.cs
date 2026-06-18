@@ -26,10 +26,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasPostgresExtension("pg_trgm");
 
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.HasIndex(c => c.Email).IsUnique();
+            entity.HasIndex(c => new { c.IsActive, c.LastName, c.FirstName });
+            entity.HasIndex(c => new { c.IsActive, c.Email });
             entity.HasQueryFilter(c => c.IsActive);
             entity.HasOne<ApplicationUser>()
                   .WithMany()
@@ -40,6 +43,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<DeliveryDriver>(entity =>
         {
             entity.HasIndex(d => d.Email).IsUnique();
+            entity.HasIndex(d => new { d.IsActive, d.LastName, d.FirstName });
+            entity.HasIndex(d => new { d.IsActive, d.Email });
+            entity.HasIndex(d => new { d.IsActive, d.IsAvailable });
             entity.HasQueryFilter(d => d.IsActive);
             entity.HasOne<ApplicationUser>()
                   .WithMany()
@@ -55,6 +61,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(s => s.IsActive);
+            entity.HasIndex(s => new { s.IsActive, s.Name });
+            entity.HasIndex(s => new { s.CategoryId, s.IsActive });
             entity.HasOne<ApplicationUser>()
                   .WithMany()
                   .HasForeignKey(s => s.UserId)
@@ -69,11 +77,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(a => a.IsActive);
+            entity.HasIndex(a => new { a.IsActive, a.City, a.Street });
+            entity.HasIndex(a => new { a.CustomerId, a.IsActive });
         });
 
         modelBuilder.Entity<StoreCategory>(entity =>
         {
             entity.HasIndex(sc => sc.Name).IsUnique();
+            entity.HasIndex(sc => new { sc.IsActive, sc.Name });
             entity.HasQueryFilter(sc => sc.IsActive);
         });
 
@@ -85,6 +96,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(p => new { p.StoreId, p.Name });
+            entity.HasIndex(p => new { p.IsActive, p.Name });
+            entity.HasIndex(p => new { p.StoreId, p.IsActive, p.Name });
 
             entity.HasQueryFilter(p => p.IsActive);
         });
@@ -119,6 +132,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(o => o.OrderDate);
             entity.HasIndex(o => o.CustomerId);
             entity.HasIndex(o => o.StoreId);
+            entity.HasIndex(o => new { o.IsActive, o.OrderDate });
+            entity.HasIndex(o => new { o.IsActive, o.CustomerId });
+            entity.HasIndex(o => new { o.IsActive, o.StoreId });
+            entity.HasIndex(o => new { o.IsActive, o.DeliveryDriverId });
+            entity.HasIndex(o => new { o.IsActive, o.OrderStatusId });
 
             entity.HasQueryFilter(o => o.IsActive);
         });
@@ -136,16 +154,20 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(od => od.IsActive);
+            entity.HasIndex(od => new { od.OrderId, od.IsActive });
+            entity.HasIndex(od => new { od.ProductId, od.IsActive });
         });
 
         modelBuilder.Entity<OrderStatus>(entity =>
         {
             entity.HasIndex(os => os.Name).IsUnique();
+            entity.HasIndex(os => new { os.IsActive, os.Name });
         });
 
         modelBuilder.Entity<PaymentMethod>(entity =>
         {
             entity.HasIndex(pm => pm.Name).IsUnique();
+            entity.HasIndex(pm => new { pm.IsActive, pm.Name });
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -161,6 +183,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(p => p.IsActive);
+            entity.HasIndex(p => new { p.IsActive, p.PaymentDate });
+            entity.HasIndex(p => new { p.IsActive, p.Status });
+            entity.HasIndex(p => new { p.PaymentMethodId, p.IsActive });
         });
 
         modelBuilder.Entity<Review>(entity =>
@@ -176,6 +201,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(r => new { r.CustomerId, r.StoreId });
+            entity.HasIndex(r => new { r.IsActive, r.UpdatedAt });
+            entity.HasIndex(r => new { r.CustomerId, r.IsActive });
+            entity.HasIndex(r => new { r.StoreId, r.IsActive });
 
             entity.HasQueryFilter(r => r.IsActive);
         });

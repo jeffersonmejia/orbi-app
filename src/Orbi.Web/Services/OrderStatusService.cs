@@ -46,6 +46,7 @@ public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewMod
     private IQueryable<OrderStatusViewModel> GetAllQuery()
     {
         return _context.OrderStatuses
+            .AsNoTracking()
             .OrderBy(s => s.Name)
             .Select(s => new OrderStatusViewModel
             {
@@ -60,6 +61,7 @@ public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewMod
     public async Task<OrderStatusViewModel?> GetByIdAsync(int id)
     {
         var status = await _context.OrderStatuses
+            .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (status == null) return null;

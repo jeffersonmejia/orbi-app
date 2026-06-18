@@ -112,9 +112,11 @@ public class AddressesController : Controller
     private async Task PopulateCustomersDropDownListAsync(object? selectedCustomer = null)
     {
         var customers = await _context.Customers
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)
             .ThenBy(c => c.FirstName)
+            .Take(200)
             .Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),

@@ -82,16 +82,23 @@
 /* ─── Desktop sidebar (> 900px) ─── */
 @media (min-width: 901px) {
   body {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    align-items: start;
+    column-gap: 1.25rem;
+    min-height: 100vh;
     padding-top: 0;
     padding-left: 0;
   }
 
   .island-nav {
-    position: fixed;
-    top: 50%;
-    left: 1.2rem;
+    position: sticky;
+    top: 50vh;
+    left: auto;
     transform: translateY(-50%);
-    width: max-content;
+    width: calc(100% - 1.5rem);
+    max-width: 12rem;
+    margin: 50vh 0 1rem 1rem;
     flex-direction: column;
     align-items: stretch;
     border-radius: var(--radius-lg);
@@ -102,8 +109,13 @@
     background-blend-mode: screen, normal;
   }
 
+  body > .container,
+  body > .footer {
+    grid-column: 2;
+  }
+
   .island-link {
-    min-width: 7.4rem;
+    min-width: 10rem;
     min-height: 3rem;
     border-radius: var(--radius-pill);
     padding: 0.68rem 0.75rem;
@@ -140,6 +152,9 @@
   outline: none;
   font-family: inherit;
   font-size: inherit;
+}
+.dropdown-toggle::after {
+  display: none;
 }
 .dropdown-toggle .drop-chevron {
   font-size: 0.65rem;

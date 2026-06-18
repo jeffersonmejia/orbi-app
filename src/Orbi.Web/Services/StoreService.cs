@@ -47,6 +47,7 @@ public class StoreService : IEntityService<Store, StoreViewModel>
     private IQueryable<StoreViewModel> GetAllQuery()
     {
         return _context.Stores
+            .AsNoTracking()
             .Include(s => s.Category)
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)
@@ -70,6 +71,7 @@ public class StoreService : IEntityService<Store, StoreViewModel>
     public async Task<StoreViewModel?> GetByIdAsync(int id)
     {
         var store = await _context.Stores
+            .AsNoTracking()
             .Include(s => s.Category)
             .FirstOrDefaultAsync(s => s.Id == id && s.IsActive);
 

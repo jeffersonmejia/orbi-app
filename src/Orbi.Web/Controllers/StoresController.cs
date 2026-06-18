@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Orbi.Web.Data;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
@@ -11,11 +12,13 @@ public class StoresController : Controller
 {
     private readonly StoreService _storeService;
     private readonly AppDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public StoresController(StoreService storeService, AppDbContext context)
+    public StoresController(StoreService storeService, AppDbContext context, IMemoryCache cache)
     {
         _storeService = storeService;
         _context = context;
+        _cache = cache;
     }
 
     public async Task<IActionResult> Index(
@@ -111,7 +114,11 @@ public class StoresController : Controller
 
     private async Task PopulateCategoriesDropDownListAsync(object? selectedCategory = null)
     {
-        var categories = await _context.StoreCategories
+        var categories = await _cache.GetOrCreateAsync("dropdown:store-categories", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            return await _context.StoreCategories
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.Name)
             .Select(c => new SelectListItem
@@ -120,6 +127,7 @@ public class StoresController : Controller
                 Text = c.Name
             })
             .ToListAsync();
+        });
 
         ViewBag.CategoryId = new SelectList(categories, "Value", "Text", selectedCategory);
     }

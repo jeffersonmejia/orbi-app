@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Orbi.Web.Data;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
@@ -11,11 +12,13 @@ public class PaymentsController : Controller
 {
     private readonly PaymentService _paymentService;
     private readonly AppDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public PaymentsController(PaymentService paymentService, AppDbContext context)
+    public PaymentsController(PaymentService paymentService, AppDbContext context, IMemoryCache cache)
     {
         _paymentService = paymentService;
         _context = context;
+        _cache = cache;
     }
 
     public async Task<IActionResult> Index(
@@ -116,8 +119,10 @@ public class PaymentsController : Controller
     private async Task PopulateOrdersDropDownListAsync(object? selectedOrder = null)
     {
         var orders = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.IsActive)
             .OrderByDescending(o => o.OrderDate)
+            .Take(200)
             .Select(o => new SelectListItem
             {
                 Value = o.Id.ToString(),
@@ -130,7 +135,11 @@ public class PaymentsController : Controller
 
     private async Task PopulatePaymentMethodsDropDownListAsync(object? selectedMethod = null)
     {
-        var methods = await _context.PaymentMethods
+        var methods = await _cache.GetOrCreateAsync("dropdown:payment-methods", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            return await _context.PaymentMethods
+            .AsNoTracking()
             .Where(m => m.IsActive)
             .OrderBy(m => m.Name)
             .Select(m => new SelectListItem
@@ -139,6 +148,7 @@ public class PaymentsController : Controller
                 Text = m.Name
             })
             .ToListAsync();
+        });
 
         ViewBag.PaymentMethodId = new SelectList(methods, "Value", "Text", selectedMethod);
     }
