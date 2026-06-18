@@ -9,6 +9,36 @@ services:
       POSTGRES_DB: OrbiDb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    # LOW-RAM POSTGRES TUNING.
+    command:
+      - "postgres"
+      # FEWER CONNECTIONS.
+      - "-c"
+      - "max_connections=30"
+      # SAFE DB CACHE.
+      - "-c"
+      - "shared_buffers=256MB"
+      # PLANNER CACHE HINT.
+      - "-c"
+      - "effective_cache_size=1GB"
+      # SORT/JOIN MEMORY.
+      - "-c"
+      - "work_mem=8MB"
+      # INDEX MAINTENANCE.
+      - "-c"
+      - "maintenance_work_mem=256MB"
+      # LESS CHECKPOINT CHURN.
+      - "-c"
+      - "checkpoint_timeout=10min"
+      # COMPRESS WAL.
+      - "-c"
+      - "wal_compression=on"
+    # DB SHARED MEMORY.
+    shm_size: "256mb"
+    # RAM CAP.
+    mem_limit: "1536m"
+    # CPU CAP.
+    cpus: "1.5"
     volumes:
       - orbi_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +46,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   # seed:
   #   image: postgres:16-alpine
