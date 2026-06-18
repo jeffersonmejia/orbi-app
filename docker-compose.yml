@@ -17,5 +17,35 @@ services:
       timeout: 5s
       retries: 5
 
+  seed:
+    image: postgres:16-alpine
+    container_name: orbi-seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGDATABASE: OrbiDb
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    volumes:
+      - ./db:/seeds:ro
+    command: >
+      sh -c '
+        until psql -v ON_ERROR_STOP=1 -Atc "SELECT 1 FROM pg_tables WHERE schemaname = current_schema() AND tablename = concat(chr(67), chr(117), chr(115), chr(116), chr(111), chr(109), chr(101), chr(114), chr(115))" | grep -q 1; do
+          echo "Waiting for EF Core schema...";
+          sleep 2;
+        done;
+        psql -v ON_ERROR_STOP=1 -f /seeds/00_reset.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/01_catalogs.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/02_people.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/03_stores_products.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/04_orders.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/05_order_details.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/06_payments_reviews.sql;
+        psql -v ON_ERROR_STOP=1 -f /seeds/99_validate.sql;
+      '
+    restart: "no"
+
 volumes:
   orbi_pgdata:
