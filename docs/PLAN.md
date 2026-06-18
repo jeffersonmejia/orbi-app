@@ -1,10 +1,3 @@
-# Plan de seeds para 600k registros
-
-- Usar SQL con `generate_series` y operaciones por lote, no inserts manuales ni EF fila por fila.
-- Mantener los catálogos pequeños y fijos: `StoreCategories`, `OrderStatuses`, `PaymentMethods`.
-- Generar datos determinísticos con patrones por índice para que los seeds sean repetibles.
-- Separar cada grupo en archivos numerados para ejecutarlos en orden.
-
 ## Distribución propuesta
 
 Total exacto: 600,000 registros de negocio.
@@ -23,10 +16,6 @@ Total exacto: 600,000 registros de negocio.
 |  10 | OrderDetails    |   180,000 |
 |  11 | Payments        |   130,000 |
 |  12 | Reviews         |    27,978 |
-
-Nota: `Payments` tiene relacion 1:1 con `Orders`, por eso usa el mismo volumen.
-
-## Archivos creados
 
 1. `db/00_reset.sql`
    - Limpiar tablas de negocio con `TRUNCATE ... RESTART IDENTITY CASCADE`.
@@ -66,29 +55,3 @@ Nota: `Payments` tiene relacion 1:1 con `Orders`, por eso usa el mismo volumen.
    - Validar FKs principales.
    - Validar `Orders.TotalAmount = SUM(OrderDetails.Subtotal)`.
    - Validar que `Payments.Amount = Orders.TotalAmount`.
-
-## Reglas importantes
-
-- Ejecutar los scripts dentro de una transaccion por archivo.
-- Cargar primero padres y luego hijos.
-- Actualizar totales de orden despues de crear detalles.
-- Respetar unicidad de:
-  - `Customers.Email`
-  - `DeliveryDrivers.Email`
-  - `StoreCategories.Name`
-  - `OrderStatuses.Name`
-  - `PaymentMethods.Name`
-- Mantener `IsActive = true` en la mayoria de registros para que los filtros globales de EF los muestren.
-
-## Comando esperado
-
-```bash
-psql "$DATABASE_URL" -f db/00_reset.sql
-psql "$DATABASE_URL" -f db/01_catalogs.sql
-psql "$DATABASE_URL" -f db/02_people.sql
-psql "$DATABASE_URL" -f db/03_stores_products.sql
-psql "$DATABASE_URL" -f db/04_orders.sql
-psql "$DATABASE_URL" -f db/05_order_details.sql
-psql "$DATABASE_URL" -f db/06_payments_reviews.sql
-psql "$DATABASE_URL" -f db/99_validate.sql
-```
