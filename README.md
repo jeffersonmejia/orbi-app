@@ -42,40 +42,30 @@ The app applies pending EF Core migrations on startup. The seed container waits 
 ## 4. Role and Business Flow
 
 ```mermaid
-graph LR
-    Login["Sign in"] --> Gate["Role access filter"]
-    Gate --> Scope["Ownership rules"]
-
-    Scope --> Admin["Admin"]
-    Scope --> StoreOwner["StoreOwner"]
-    Scope --> DeliveryDriver["DeliveryDriver"]
-    Scope --> Customer["Customer"]
-
-    Home["Home Dashboard"]
-    Catalog["Catalog pages: Products, Categories, Stores, Reviews"]
-    Orders["Order pages: Orders, Statuses, Payments, Pay Methods"]
-    Directory["Directory pages: Customers, Addresses, Drivers"]
-    Profile["Profile and own data"]
-
-    Admin -->|"Read"| Home
-    Admin -->|"Full CRUD"| Catalog
-    Admin -->|"Full CRUD"| Orders
-    Admin -->|"Full CRUD"| Directory
-
-    StoreOwner -->|"Read"| Home
-    StoreOwner -->|"Own store CRUD and reviews read"| Catalog
-    StoreOwner -->|"Own orders edit, payments read, catalogs read"| Orders
-    StoreOwner -->|"Drivers read only"| Directory
-
-    DeliveryDriver -->|"Read"| Home
-    DeliveryDriver -->|"Stores and products read"| Catalog
-    DeliveryDriver -->|"Assigned orders read and edit status"| Orders
-    DeliveryDriver -->|"Own driver profile, assigned addresses read"| Directory
-
-    Customer -->|"Read"| Home
-    Customer -->|"Stores and products read"| Catalog
-    Customer -->|"Own orders read and create"| Orders
-    Customer -->|"Profile only"| Profile
+graph TD;
+    Login[Sign in]-->Gate[Role access filter];
+    Gate-->Scope[Ownership rules];
+    Scope-->Admin[Admin];
+    Scope-->StoreOwner[StoreOwner];
+    Scope-->DeliveryDriver[DeliveryDriver];
+    Scope-->Customer[Customer];
+    Admin-->AdminHome[Home read];
+    Admin-->AdminCatalog[Catalog full CRUD];
+    Admin-->AdminOrders[Orders full CRUD];
+    Admin-->AdminDirectory[Directory full CRUD];
+    StoreOwner-->OwnerHome[Home read];
+    StoreOwner-->OwnerCatalog[Own store and products CRUD];
+    StoreOwner-->OwnerOrders[Own orders read and edit];
+    StoreOwner-->OwnerPayments[Own payments read];
+    StoreOwner-->OwnerDrivers[Drivers read only];
+    DeliveryDriver-->DriverHome[Home read];
+    DeliveryDriver-->DriverCatalog[Stores and products read];
+    DeliveryDriver-->DriverOrders[Assigned orders read and edit status];
+    DeliveryDriver-->DriverAddresses[Assigned addresses read];
+    Customer-->CustomerHome[Home read];
+    Customer-->CustomerCatalog[Stores and products read];
+    Customer-->CustomerOrders[Own orders read and create];
+    Customer-->CustomerProfile[Profile and own data];
 ```
 
 This view is intended for non-technical readers. Every user signs in through the same application, the role access filter decides which pages are visible, and ownership rules limit the records each role can read or change.
