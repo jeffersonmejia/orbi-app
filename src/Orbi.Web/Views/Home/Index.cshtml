@@ -1,30 +1,44 @@
 ﻿@model Orbi.Web.ViewModels.HomeDashboardViewModel
 @{
     ViewData["Title"] = "Home";
-    var chartHeight = Math.Max(220, Model.TableCounts.Count * 46);
 }
 
 <section class="home-dashboard py-4">
     <div class="home-dashboard__header" data-reveal>
         <div>
-            <span class="home-dashboard__eyebrow">
-                <i class="bi bi-bar-chart-fill"></i>
-                Database overview
-            </span>
-            <h1 class="display-6 mb-1">Registros por tabla</h1>
-            <p class="text-muted mb-0">Conteo total de filas para las tablas definidas en la arquitectura.</p>
+            <h1 class="display-6 mb-0">All records</h1>
         </div>
         <div class="home-dashboard__total" aria-label="Total records">
+            <i class="bi bi-database-fill"></i>
+            <small>Total records</small>
             <span>@Model.TotalRecords.ToString("N0")</span>
-            <small>Total</small>
         </div>
     </div>
 
-    <div class="home-chart glass" style="--chart-height: @(chartHeight)px;" data-reveal data-delay="1">
+    <div class="home-dashboard__chips" aria-label="Filter table groups" data-reveal data-delay="1">
+        <button class="home-chip active" type="button" data-category="All">
+            <i class="bi bi-grid-fill"></i>
+            All
+        </button>
+        <button class="home-chip" type="button" data-category="Catalog">
+            <i class="bi bi-box-seam-fill"></i>
+            Catalog
+        </button>
+        <button class="home-chip" type="button" data-category="Orders">
+            <i class="bi bi-bag-fill"></i>
+            Orders
+        </button>
+        <button class="home-chip" type="button" data-category="Directory">
+            <i class="bi bi-people-fill"></i>
+            Directory
+        </button>
+    </div>
+
+    <div class="home-chart glass" data-reveal data-delay="2">
         @foreach (var item in Model.TableCounts)
         {
             var width = Model.MaxRecords == 0 ? 0 : Math.Max(4, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
-            <div class="home-chart__row">
+            <div class="home-chart__row" data-chart-row data-category="@item.Category">
                 <div class="home-chart__label">
                     <span class="home-chart__icon"><i class="bi @item.Icon"></i></span>
                     @if (item.ControllerName is not null)
@@ -36,9 +50,9 @@
                         <span>@item.TableName</span>
                     }
                 </div>
-                <div class="home-chart__track" aria-label="@item.TableName: @item.Count registros">
+                <span class="home-chart__value">@item.Count.ToString("N0")</span>
+                <div class="home-chart__track" aria-label="@item.TableName: @item.Count records">
                     <div class="home-chart__bar" style="width: @width%;"></div>
-                    <span class="home-chart__value">@item.Count.ToString("N0")</span>
                 </div>
             </div>
         }
@@ -47,8 +61,29 @@
 
 <style>
     .home-dashboard {
+        --home-ink: var(--purple-800);
+        --home-ink-strong: var(--purple-900);
+        --home-muted: var(--purple-600);
+        --home-surface: rgba(255, 255, 255, 0.32);
+        --home-surface-strong: rgba(255, 255, 255, 0.42);
+        --home-border: rgba(255, 255, 255, 0.54);
+        --home-fill: rgba(196, 181, 253, 0.62);
+        color: var(--home-ink);
         display: grid;
-        gap: 1.25rem;
+        gap: 1rem;
+    }
+
+    .home-dashboard .display-6,
+    .home-dashboard a,
+    .home-dashboard span,
+    .home-dashboard small,
+    .home-dashboard button {
+        color: inherit;
+    }
+
+    .home-dashboard .display-6 {
+        color: var(--home-ink-strong);
+        font-weight: 500;
     }
 
     .home-dashboard__header {
@@ -58,67 +93,108 @@
         justify-content: space-between;
     }
 
-    .home-dashboard__eyebrow {
-        align-items: center;
-        color: var(--accent);
-        display: inline-flex;
-        font-size: 0.78rem;
-        font-weight: 800;
-        gap: 0.45rem;
-        letter-spacing: 0.03em;
-        margin-bottom: 0.35rem;
-        text-transform: uppercase;
-    }
-
     .home-dashboard__total {
         align-items: center;
-        background: var(--glass-sheen), var(--soft-card-strong);
-        border: 1px solid var(--color-border);
+        background: var(--glass-sheen), var(--home-surface-strong);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 0;
         border-radius: var(--radius-sm);
         box-shadow: var(--shadow-sm);
-        display: grid;
-        min-width: 118px;
-        padding: 0.8rem 1rem;
-        text-align: right;
+        display: inline-flex;
+        gap: 0.45rem;
+        justify-content: flex-end;
+        min-height: 38px;
+        padding: 0.45rem 0.8rem;
+        white-space: nowrap;
+    }
+
+    .home-dashboard__total i {
+        color: var(--home-muted);
+        font-size: 0.95rem;
+        line-height: 1;
     }
 
     .home-dashboard__total span {
-        color: var(--color-text);
-        font-size: 1.45rem;
-        font-weight: 800;
+        color: var(--home-ink-strong);
+        font-size: 0.95rem;
+        font-weight: 600;
         line-height: 1;
     }
 
     .home-dashboard__total small {
-        color: var(--color-text-muted);
+        color: var(--home-muted);
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 500;
         text-transform: uppercase;
     }
 
+    .home-dashboard__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .home-chip {
+        align-items: center;
+        background: var(--glass-sheen), var(--home-surface);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 0;
+        border-radius: var(--radius-pill);
+        color: var(--home-muted);
+        display: inline-flex;
+        font-size: 0.84rem;
+        font-weight: 500;
+        gap: 0.4rem;
+        min-height: 34px;
+        padding: 0.35rem 0.75rem;
+        transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .home-chip:hover,
+    .home-chip.active {
+        background: var(--glass-sheen), rgba(237, 233, 254, 0.62);
+        background-blend-mode: screen, normal;
+        box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.42);
+        color: var(--home-ink-strong);
+    }
+
     .home-chart {
+        background: var(--glass-sheen), var(--home-surface);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(34px) saturate(210%) contrast(1.06);
+        -webkit-backdrop-filter: blur(34px) saturate(210%) contrast(1.06);
+        border: 0;
         border-radius: var(--radius);
+        box-shadow: 0 10px 34px rgba(109, 40, 217, 0.06);
         display: grid;
-        gap: 0.75rem;
-        min-height: var(--chart-height);
-        padding: 1.1rem;
+        gap: 1.05rem 1.25rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 1.05rem;
     }
 
     .home-chart__row {
         align-items: center;
         display: grid;
-        gap: 0.8rem;
-        grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
-        min-height: 34px;
+        gap: 0.42rem 0.7rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "label value"
+            "track track";
+        min-height: 42px;
     }
 
     .home-chart__label {
         align-items: center;
-        color: var(--color-text);
+        color: var(--home-ink);
         display: flex;
-        font-size: 0.9rem;
-        font-weight: 750;
-        gap: 0.55rem;
+        font-size: 0.88rem;
+        font-weight: 500;
+        gap: 0.5rem;
+        grid-area: label;
         min-width: 0;
     }
 
@@ -129,33 +205,41 @@
 
     .home-chart__icon {
         align-items: center;
-        background: var(--accent-soft);
-        border: 1px solid var(--color-border);
-        border-radius: 0.65rem;
-        color: var(--accent);
+        background: rgba(237, 233, 254, 0.42);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(10px) saturate(180%);
+        -webkit-backdrop-filter: blur(10px) saturate(180%);
+        border: 0;
+        border-radius: 50%;
+        color: var(--home-muted);
         display: inline-flex;
-        flex: 0 0 32px;
-        height: 32px;
+        flex: 0 0 28px;
+        height: 28px;
         justify-content: center;
-        width: 32px;
+        width: 28px;
     }
 
     .home-chart__track {
         align-items: center;
-        background: rgba(255, 255, 255, 0.38);
-        border: 1px solid var(--color-border);
-        border-radius: 0.7rem;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        min-height: 34px;
+        background: rgba(255, 255, 255, 0.26);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 0;
+        border-radius: var(--radius-pill);
+        grid-area: track;
+        height: 8px;
         overflow: hidden;
         position: relative;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
     }
 
     .home-chart__bar {
-        background: linear-gradient(90deg, #14b8a6, var(--accent));
+        background: var(--glass-sheen), var(--home-fill);
+        background-blend-mode: screen, normal;
         border-radius: inherit;
         bottom: 0;
+        box-shadow: 0 0 12px rgba(167, 139, 250, 0.18);
         left: 0;
         min-width: 0;
         position: absolute;
@@ -163,12 +247,16 @@
     }
 
     .home-chart__value {
-        color: var(--color-text);
-        font-size: 0.86rem;
-        font-weight: 800;
-        padding: 0 0.75rem;
-        position: relative;
-        z-index: 1;
+        color: var(--home-muted);
+        font-size: 0.8rem;
+        font-weight: 500;
+        grid-area: value;
+        line-height: 1;
+        text-align: right;
+    }
+
+    .home-chart__row.is-hidden {
+        display: none;
     }
 
     @@media (max-width: 720px) {
@@ -178,7 +266,7 @@
         }
 
         .home-dashboard__total {
-            text-align: left;
+            justify-content: flex-start;
         }
 
         .home-chart__row {
@@ -186,5 +274,29 @@
             grid-template-columns: 1fr;
             gap: 0.45rem;
         }
+
+        .home-chart {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+
+@section Scripts {
+    <script>
+        (() => {
+            const chips = document.querySelectorAll('.home-chip');
+            const rows = document.querySelectorAll('[data-chart-row]');
+
+            chips.forEach((chip) => {
+                chip.addEventListener('click', () => {
+                    const category = chip.dataset.category;
+
+                    chips.forEach((item) => item.classList.toggle('active', item === chip));
+                    rows.forEach((row) => {
+                        row.classList.toggle('is-hidden', category !== 'All' && row.dataset.category !== category);
+                    });
+                });
+            });
+        })();
+    </script>
+}

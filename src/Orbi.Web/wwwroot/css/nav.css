@@ -72,11 +72,16 @@
 }
 
 .aside-divider {
-  background: var(--color-border);
-  opacity: 0.4;
+  background: var(--glass-sheen), rgba(255,255,255,0.45);
+  background-blend-mode: screen, normal;
+  opacity: 0.85;
   width: 1px;
   height: 24px;
   margin: 0 0.4rem;
+}
+
+.auth-divider {
+  flex: 0 0 auto;
 }
 
 /* ─── Desktop sidebar (> 900px) ─── */
@@ -138,7 +143,7 @@
   .aside-divider {
     width: auto !important;
     height: 1px !important;
-    margin: 0.4rem 0.75rem !important;
+    margin: 0.6rem 0.75rem 0.45rem !important;
   }
 }
 
@@ -247,7 +252,10 @@
     font-size: 1.15rem;
   }
 
-  .aside-divider {
-    display: none;
+  .auth-divider {
+    display: block;
+    width: 1px;
+    height: 2.15rem;
+    margin: 0 0.25rem;
   }
 }

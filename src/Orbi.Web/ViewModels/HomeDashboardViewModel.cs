@@ -1,6 +1,6 @@
 namespace Orbi.Web.ViewModels;
 
-public record TableCountViewModel(string TableName, int Count, string? ControllerName, string Icon);
+public record TableCountViewModel(string TableName, int Count, string? ControllerName, string Icon, string Category);
 
 public class HomeDashboardViewModel
 {
