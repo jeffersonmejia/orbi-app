@@ -36,7 +36,7 @@ public class HomeController : Controller
             {
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
                 StatusCode = StatusCodes.Status503ServiceUnavailable,
-                Message = "The database is temporarily unavailable. Please try again later."
+                Message = "The service is temporarily unavailable. Please try again later."
             });
         }
     }
@@ -65,7 +65,7 @@ public class HomeController : Controller
 
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new
             {
-                error = "Database unavailable"
+                error = "Service temporarily unavailable"
             });
         }
     }
@@ -152,7 +152,7 @@ public class HomeController : Controller
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
             StatusCode = statusCode,
             Message = isDatabaseError
-                ? "The database is temporarily unavailable. Please try again later."
+                ? "The service is temporarily unavailable. Please try again later."
                 : "An error occurred while processing your request."
         });
     }

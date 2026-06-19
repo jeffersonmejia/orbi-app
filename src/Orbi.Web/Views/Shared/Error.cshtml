@@ -3,19 +3,54 @@
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">
-    @(Model.StatusCode.HasValue ? $"Status {Model.StatusCode}" : "An error occurred while processing your request.")
-</h2>
+<section class="error-page">
+    <div class="error-card glass">
+        <h1>Error.</h1>
+        <h2>
+            @(Model.StatusCode.HasValue ? $"Status {Model.StatusCode}" : "An error occurred while processing your request.")
+        </h2>
 
-@if (!string.IsNullOrWhiteSpace(Model.Message))
-{
-    <p>@Model.Message</p>
-}
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <p>@Model.Message</p>
+        }
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+    </div>
+</section>
+
+<style>
+    .error-page {
+        display: grid;
+        min-height: calc(100vh - 11rem);
+        place-items: center;
+    }
+
+    .error-card {
+        border: 0;
+        border-radius: var(--radius);
+        max-width: 520px;
+        padding: 1.5rem;
+        text-align: center;
+        width: min(100%, 520px);
+    }
+
+    .error-card h1 {
+        color: var(--purple-800);
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .error-card h2 {
+        color: var(--purple-700);
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.65rem;
+    }
+
+    .error-card p {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+</style>
