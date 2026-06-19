@@ -45,48 +45,53 @@ Every user signs in through the same application. The role access filter decides
 
 ### Admin
 
-```text
-Sign in
-  -> Role access filter
-  -> Admin
-      -> Home: read
-      -> Catalog: full CRUD for products, categories, stores and reviews
-      -> Orders: full CRUD for orders, statuses, payments and payment methods
-      -> Directory: full CRUD for customers, addresses and drivers
+```mermaid
+graph TD;
+    A[Sign in]-->B[Role access filter];
+    B-->C[Admin];
+    C-->D[Home read];
+    C-->E[Catalog full CRUD];
+    C-->F[Orders full CRUD];
+    C-->G[Directory full CRUD];
 ```
 
 ### StoreOwner
 
-```text
-Sign in
-  -> Role access filter
-  -> StoreOwner
-      -> Home: read
-      -> Catalog: own store and products CRUD, reviews read, categories read
-      -> Orders: own store orders read and edit, payments read, statuses read
-      -> Directory: drivers read only
+```mermaid
+graph TD;
+    A[Sign in]-->B[Role access filter];
+    B-->C[StoreOwner];
+    C-->D[Home read];
+    C-->E[Own store and products CRUD];
+    C-->F[Reviews and categories read];
+    C-->G[Own orders read and edit];
+    C-->H[Own payments read];
+    C-->I[Drivers read only];
 ```
 
 ### DeliveryDriver
 
-```text
-Sign in
-  -> Role access filter
-  -> DeliveryDriver
-      -> Home: read
-      -> Catalog: stores and products read
-      -> Orders: assigned orders read and edit status, statuses read
-      -> Directory: own driver profile and assigned addresses read
+```mermaid
+graph TD;
+    A[Sign in]-->B[Role access filter];
+    B-->C[DeliveryDriver];
+    C-->D[Home read];
+    C-->E[Stores and products read];
+    C-->F[Assigned orders read];
+    C-->G[Edit assigned order status];
+    C-->H[Own driver profile];
+    C-->I[Assigned addresses read];
 ```
 
 ### Customer
 
-```text
-Sign in
-  -> Role access filter
-  -> Customer
-      -> Home: read
-      -> Catalog: stores and products read
-      -> Orders: own orders read and create
-      -> Directory: hidden, profile only
+```mermaid
+graph TD;
+    A[Sign in]-->B[Role access filter];
+    B-->C[Customer];
+    C-->D[Home read];
+    C-->E[Stores and products read];
+    C-->F[Own orders read];
+    C-->G[Create own orders];
+    C-->H[Profile only];
 ```
