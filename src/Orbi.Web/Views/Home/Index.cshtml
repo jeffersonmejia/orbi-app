@@ -1,61 +1,47 @@
 ﻿@model Orbi.Web.ViewModels.HomeDashboardViewModel
 @{
     ViewData["Title"] = "Home";
+
+    string ShortLabel(string value)
+    {
+        const int maxLength = 9;
+        return value.Length <= maxLength ? value : value[..maxLength] + "...";
+    }
 }
 
-<section class="home-dashboard py-4">
-    <div class="home-dashboard__header" data-reveal>
-        <div>
-            <h1 class="display-6 mb-0">All records</h1>
-        </div>
-        <div class="home-dashboard__total" aria-label="Total records">
+<section class="home-dashboard">
+    <div class="home-stack">
+        <div class="home-total glass" aria-label="Total records" data-reveal>
             <i class="bi bi-database-fill"></i>
-            <small>Total records</small>
-            <span>@Model.TotalRecords.ToString("N0")</span>
+            <span>Total records</span>
+            <strong>@Model.TotalRecords.ToString("N0")</strong>
         </div>
-    </div>
-
-    <div class="home-dashboard__chips" aria-label="Filter table groups" data-reveal data-delay="1">
-        <button class="home-chip active" type="button" data-category="All">
-            <i class="bi bi-grid-fill"></i>
-            All
-        </button>
-        <button class="home-chip" type="button" data-category="Catalog">
-            <i class="bi bi-box-seam-fill"></i>
-            Catalog
-        </button>
-        <button class="home-chip" type="button" data-category="Orders">
-            <i class="bi bi-bag-fill"></i>
-            Orders
-        </button>
-        <button class="home-chip" type="button" data-category="Directory">
-            <i class="bi bi-people-fill"></i>
-            Directory
-        </button>
-    </div>
-
-    <div class="home-chart glass" data-reveal data-delay="2">
-        @foreach (var item in Model.TableCounts)
-        {
-            var width = Model.MaxRecords == 0 ? 0 : Math.Max(4, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
-            <div class="home-chart__row" data-chart-row data-category="@item.Category">
-                <div class="home-chart__label">
-                    <span class="home-chart__icon"><i class="bi @item.Icon"></i></span>
-                    @if (item.ControllerName is not null)
-                    {
-                        <a asp-controller="@item.ControllerName" asp-action="Index">@item.TableName</a>
-                    }
-                    else
-                    {
-                        <span>@item.TableName</span>
-                    }
+        <div class="home-chart glass" data-reveal>
+            @foreach (var item in Model.TableCounts)
+            {
+                var height = Model.MaxRecords == 0 ? 0 : Math.Max(8, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
+                <div class="home-chart__row" data-chart-row data-category="@item.Category" style="--bar-height: @height%;">
+                    <span class="home-chart__value">@item.Count.ToString("N0")</span>
+                    <div class="home-chart__track" aria-label="@item.TableName: @item.Count records">
+                        <div class="home-chart__bar"></div>
+                    </div>
+                    <div class="home-chart__label">
+                        <span class="home-chart__icon"><i class="bi @item.Icon"></i></span>
+                        @if (item.ControllerName is not null)
+                        {
+                            <a asp-controller="@item.ControllerName" asp-action="Index" title="@item.TableName">@ShortLabel(item.TableName)</a>
+                        }
+                        else
+                        {
+                            <span title="@item.TableName">@ShortLabel(item.TableName)</span>
+                        }
+                    </div>
                 </div>
-                <span class="home-chart__value">@item.Count.ToString("N0")</span>
-                <div class="home-chart__track" aria-label="@item.TableName: @item.Count records">
-                    <div class="home-chart__bar" style="width: @width%;"></div>
-                </div>
-            </div>
-        }
+            }
+        </div>
+        <footer class="home-footer">
+            &copy; 2026 Orbi Platform &mdash; All rights reserved.
+        </footer>
     </div>
 </section>
 
@@ -70,96 +56,47 @@
         --home-fill: rgba(196, 181, 253, 0.62);
         color: var(--home-ink);
         display: grid;
-        gap: 1rem;
+        min-height: calc(100vh - 8.75rem);
+        place-items: center;
     }
 
-    .home-dashboard .display-6,
     .home-dashboard a,
     .home-dashboard span,
     .home-dashboard small,
-    .home-dashboard button {
+    .home-dashboard strong {
         color: inherit;
     }
 
-    .home-dashboard .display-6 {
-        color: var(--home-ink-strong);
-        font-weight: 500;
+    .home-stack {
+        display: grid;
+        gap: 0.65rem;
+        justify-items: center;
+        width: 100%;
     }
 
-    .home-dashboard__header {
-        align-items: center;
-        display: flex;
-        gap: 1rem;
-        justify-content: space-between;
-    }
-
-    .home-dashboard__total {
+    .home-total {
         align-items: center;
         background: var(--glass-sheen), var(--home-surface-strong);
         background-blend-mode: screen, normal;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(24px) saturate(200%) contrast(1.04);
+        -webkit-backdrop-filter: blur(24px) saturate(200%) contrast(1.04);
         border: 0;
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-sm);
+        border-radius: var(--radius);
+        box-shadow: none;
+        color: var(--home-ink-strong);
         display: inline-flex;
-        gap: 0.45rem;
-        justify-content: flex-end;
-        min-height: 38px;
-        padding: 0.45rem 0.8rem;
+        font-size: 1.18rem;
+        font-weight: 700;
+        gap: 0.6rem;
+        justify-content: center;
+        line-height: 1;
+        padding: 0.68rem 1.05rem;
         white-space: nowrap;
     }
 
-    .home-dashboard__total i {
+    .home-total i {
         color: var(--home-muted);
-        font-size: 0.95rem;
-        line-height: 1;
-    }
-
-    .home-dashboard__total span {
-        color: var(--home-ink-strong);
-        font-size: 0.95rem;
-        font-weight: 600;
-        line-height: 1;
-    }
-
-    .home-dashboard__total small {
-        color: var(--home-muted);
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: uppercase;
-    }
-
-    .home-dashboard__chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.55rem;
-    }
-
-    .home-chip {
-        align-items: center;
-        background: var(--glass-sheen), var(--home-surface);
-        background-blend-mode: screen, normal;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 0;
-        border-radius: var(--radius-pill);
-        color: var(--home-muted);
-        display: inline-flex;
-        font-size: 0.84rem;
-        font-weight: 500;
-        gap: 0.4rem;
-        min-height: 34px;
-        padding: 0.35rem 0.75rem;
-        transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-    }
-
-    .home-chip:hover,
-    .home-chip.active {
-        background: var(--glass-sheen), rgba(237, 233, 254, 0.62);
-        background-blend-mode: screen, normal;
-        box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.42);
-        color: var(--home-ink-strong);
+        font-size: 1.05rem;
     }
 
     .home-chart {
@@ -171,36 +108,52 @@
         border-radius: var(--radius);
         box-shadow: 0 10px 34px rgba(109, 40, 217, 0.06);
         display: grid;
-        gap: 1.05rem 1.25rem;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 1.05rem;
+        align-items: end;
+        gap: 0.65rem;
+        grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+        max-width: 1080px;
+        padding: 0.82rem 1rem;
+        width: 100%;
     }
 
     .home-chart__row {
-        align-items: center;
+        align-items: end;
         display: grid;
-        gap: 0.42rem 0.7rem;
-        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.34rem;
         grid-template-areas:
-            "label value"
-            "track track";
-        min-height: 42px;
+            "value"
+            "track"
+            "label";
+        grid-template-rows: 0.9rem 104px 3.15rem;
+        justify-items: center;
+        min-width: 0;
     }
+
+    .home-chart__row:nth-child(5n + 2) { --bar-fill: var(--purple-200); }
+    .home-chart__row:nth-child(5n + 3) { --bar-fill: var(--purple-300); }
+    .home-chart__row:nth-child(5n + 4) { --bar-fill: var(--purple-400); }
+    .home-chart__row:nth-child(5n) { --bar-fill: #d8b4fe; }
+    .home-chart__row:nth-child(5n + 1) { --bar-fill: #c4b5fd; }
 
     .home-chart__label {
         align-items: center;
         color: var(--home-ink);
         display: flex;
-        font-size: 0.88rem;
+        flex-direction: column;
+        font-size: 0.7rem;
         font-weight: 500;
-        gap: 0.5rem;
+        gap: 0.28rem;
         grid-area: label;
+        line-height: 1.12;
         min-width: 0;
+        text-align: center;
+        width: 100%;
     }
 
     .home-chart__label a,
     .home-chart__label span {
         overflow-wrap: anywhere;
+        max-width: 100%;
     }
 
     .home-chart__icon {
@@ -213,90 +166,86 @@
         border-radius: 50%;
         color: var(--home-muted);
         display: inline-flex;
-        flex: 0 0 28px;
-        height: 28px;
+        flex: 0 0 24px;
+        height: 24px;
         justify-content: center;
-        width: 28px;
+        width: 24px;
     }
 
     .home-chart__track {
-        align-items: center;
-        background: rgba(255, 255, 255, 0.26);
-        background-blend-mode: screen, normal;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        align-items: end;
+        background: rgba(237, 233, 254, 0.42);
         border: 0;
         border-radius: var(--radius-pill);
+        display: flex;
         grid-area: track;
-        height: 8px;
+        height: 104px;
+        justify-content: center;
         overflow: hidden;
         position: relative;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+        width: 38px;
     }
 
     .home-chart__bar {
-        background: var(--glass-sheen), var(--home-fill);
-        background-blend-mode: screen, normal;
+        background: var(--bar-fill, var(--home-fill));
         border-radius: inherit;
         bottom: 0;
-        box-shadow: 0 0 12px rgba(167, 139, 250, 0.18);
         left: 0;
-        min-width: 0;
+        height: var(--bar-height);
+        min-height: 0;
         position: absolute;
-        top: 0;
+        transform-origin: bottom;
+        animation: bar-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        width: 100%;
     }
 
     .home-chart__value {
         color: var(--home-muted);
-        font-size: 0.8rem;
+        font-size: 0.76rem;
         font-weight: 500;
         grid-area: value;
         line-height: 1;
         text-align: right;
     }
 
-    .home-chart__row.is-hidden {
-        display: none;
+    .home-footer {
+        color: var(--home-muted);
+        font-size: 0.78rem;
+        line-height: 1;
+        padding-top: 0;
+        text-align: center;
+    }
+
+    @@keyframes bar-rise {
+        from {
+            transform: scaleY(0);
+        }
+        to {
+            transform: scaleY(1);
+        }
     }
 
     @@media (max-width: 720px) {
-        .home-dashboard__header {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .home-dashboard__total {
-            justify-content: flex-start;
-        }
-
         .home-chart__row {
-            align-items: stretch;
-            grid-template-columns: 1fr;
-            gap: 0.45rem;
+            grid-template-rows: 0.9rem 92px 3.15rem;
         }
 
         .home-chart {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.55rem;
+        }
+
+        .home-chart__track {
+            height: 92px;
+            width: 34px;
         }
     }
+
+    body.home-page .container {
+        padding-top: 0;
+    }
+
+    body.home-page footer.footer {
+        display: none;
+    }
 </style>
-
-@section Scripts {
-    <script>
-        (() => {
-            const chips = document.querySelectorAll('.home-chip');
-            const rows = document.querySelectorAll('[data-chart-row]');
-
-            chips.forEach((chip) => {
-                chip.addEventListener('click', () => {
-                    const category = chip.dataset.category;
-
-                    chips.forEach((item) => item.classList.toggle('active', item === chip));
-                    rows.forEach((row) => {
-                        row.classList.toggle('is-hidden', category !== 'All' && row.dataset.category !== category);
-                    });
-                });
-            });
-        })();
-    </script>
-}

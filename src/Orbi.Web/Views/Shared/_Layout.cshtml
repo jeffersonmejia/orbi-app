@@ -20,10 +20,10 @@
     <link rel="stylesheet" href="~/css/animations.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/skeleton.css" asp-append-version="true" />
 </head>
-<body>
-    @{
-        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    }
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<body class="@(currentController == "Home" ? "home-page" : "")">
     @{
         var isCatalog = currentController is "Products" or "StoreCategories" or "Stores" or "Reviews";
         var isOrders = currentController is "Orders" or "OrderStatuses" or "Payments" or "PaymentMethods";
