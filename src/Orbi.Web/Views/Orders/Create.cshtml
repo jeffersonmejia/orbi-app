@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Create Order";
+    var isCustomer = User.IsInRole("Customer");
 }
 
 <div class="d-flex align-items-center gap-2 mb-3">
@@ -18,13 +19,16 @@
             <div class="card mb-3">
                 <div class="card-header">Order Information</div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label asp-for="CustomerId" class="form-label"></label>
-                        <select asp-for="CustomerId" asp-items="@(ViewBag.CustomerId as SelectList)" class="form-select">
-                            <option value="">-- Select Customer --</option>
-                        </select>
-                        <span asp-validation-for="CustomerId" class="text-danger"></span>
-                    </div>
+                    @if (!isCustomer)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="CustomerId" class="form-label"></label>
+                            <select asp-for="CustomerId" asp-items="@(ViewBag.CustomerId as SelectList)" class="form-select">
+                                <option value="">-- Select Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger"></span>
+                        </div>
+                    }
 
                     <div class="mb-3">
                         <label asp-for="StoreId" class="form-label"></label>
@@ -34,19 +38,22 @@
                         <span asp-validation-for="StoreId" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="DeliveryDriverId" class="form-label"></label>
-                        <select asp-for="DeliveryDriverId" asp-items="@(ViewBag.DeliveryDriverId as SelectList)" class="form-select"></select>
-                        <span asp-validation-for="DeliveryDriverId" class="text-danger"></span>
-                    </div>
+                    @if (!isCustomer)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="DeliveryDriverId" class="form-label"></label>
+                            <select asp-for="DeliveryDriverId" asp-items="@(ViewBag.DeliveryDriverId as SelectList)" class="form-select"></select>
+                            <span asp-validation-for="DeliveryDriverId" class="text-danger"></span>
+                        </div>
 
-                    <div class="mb-3">
-                        <label asp-for="OrderStatusId" class="form-label"></label>
-                        <select asp-for="OrderStatusId" asp-items="@(ViewBag.OrderStatusId as SelectList)" class="form-select">
-                            <option value="">-- Select Status --</option>
-                        </select>
-                        <span asp-validation-for="OrderStatusId" class="text-danger"></span>
-                    </div>
+                        <div class="mb-3">
+                            <label asp-for="OrderStatusId" class="form-label"></label>
+                            <select asp-for="OrderStatusId" asp-items="@(ViewBag.OrderStatusId as SelectList)" class="form-select">
+                                <option value="">-- Select Status --</option>
+                            </select>
+                            <span asp-validation-for="OrderStatusId" class="text-danger"></span>
+                        </div>
+                    }
 
                     <div class="mb-3">
                         <label asp-for="AddressId" class="form-label"></label>

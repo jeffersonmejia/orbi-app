@@ -58,6 +58,10 @@
   cursor: default;
 }
 
+a.island-link--static {
+  cursor: pointer;
+}
+
 .island-link--btn {
   background: none;
   border: none;

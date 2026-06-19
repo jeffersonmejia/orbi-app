@@ -27,6 +27,7 @@ Do not publish vulnerabilities in public issues.
 | Authorization | Global MVC role filter plus service-level ownership filters |
 | Roles | `Admin`, `StoreOwner`, `DeliveryDriver`, `Customer` |
 | Ownership | Sensitive reads and writes validate `UserId` links |
+| Profile updates | Users can edit personal name and phone only; email, role, password and identifiers remain immutable from Profile |
 | Passwords | Identity password hashing; minimum 10 chars, digit, uppercase and symbol |
 | Sessions | `HttpOnly`, `SameSite=Strict`, secure cookies in production, 8-hour cookie lifetime and one active session per user |
 | CSRF | Antiforgery validation on POST actions |
@@ -39,7 +40,7 @@ Do not publish vulnerabilities in public issues.
 
 ## Access Behavior
 
-Unauthenticated users only see sign-in and sign-up actions. Authenticated users only see sections authorized for their role. If a role opens a forbidden route directly, the app returns `403` and shows the access denied page.
+Unauthenticated users only see sign-in and sign-up actions. Authenticated users only see sections authorized for their role. Customers are limited to store/product browsing and their own orders; administrative directories, payments, reviews and lookup tables are hidden and forbidden. If a role opens a forbidden route directly, the app returns `403` and shows the access denied page.
 
 ## Session Behavior
 

@@ -40,29 +40,26 @@ flowchart TD
     DeliveryDriver --> DriverOrders[Orders: assigned read/edit status]
     DeliveryDriver --> DriverCatalog[Stores and products: read]
 
-    Customer --> CustomerProfile[Customers: own read/edit]
-    Customer --> CustomerAddresses[Addresses: own CRUD]
+    Customer --> CustomerProfile[Profile: personal data only]
     Customer --> CustomerOrders[Orders: own read/create]
-    Customer --> CustomerPayments[Payments: own read/create]
-    Customer --> CustomerReviews[Reviews: own CRUD]
-    Customer --> CustomerCatalog[Stores, products and payment methods: read]
+    Customer --> CustomerCatalog[Stores and products: read]
 ```
 
 | Module | Admin | StoreOwner | DeliveryDriver | Customer |
 | --- | --- | --- | --- | --- |
-| StoreCategories | CRUD | Read | Read | Read |
+| StoreCategories | CRUD | Read | Read | Forbidden |
 | Stores | CRUD | Own CRUD | Read | Read |
 | Products | CRUD | Own store CRUD | Read | Read |
-| Customers | CRUD | Forbidden | Forbidden | Own read/edit |
-| Addresses | CRUD | Forbidden | Assigned order address read | Own CRUD |
+| Customers | CRUD | Forbidden | Forbidden | Forbidden; use Profile |
+| Addresses | CRUD | Forbidden | Assigned order address read | Forbidden |
 | Orders | CRUD | Own store read/edit | Assigned read/edit status | Own read/create |
-| OrderStatuses | CRUD | Read | Read | Read |
+| OrderStatuses | CRUD | Read | Read | Forbidden |
 | DeliveryDrivers | CRUD | Read | Own read/edit | Forbidden |
-| PaymentMethods | CRUD | Read | Forbidden | Read |
-| Payments | CRUD | Own store read | Forbidden | Own read/create |
-| Reviews | CRUD | Own store read | Forbidden | Own CRUD |
+| PaymentMethods | CRUD | Read | Forbidden | Forbidden |
+| Payments | CRUD | Own store read | Forbidden | Forbidden |
+| Reviews | CRUD | Own store read | Forbidden | Forbidden |
 
-Navigation remains visible. Forbidden access returns `403` and shows the access denied page.
+Authenticated navigation only shows sections authorized for the current role. Forbidden direct access returns `403` and shows the access denied page.
 
 ## CRUD Routes
 

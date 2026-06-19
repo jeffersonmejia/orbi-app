@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Controllers;
@@ -13,11 +14,13 @@ public class HomeController : Controller
 {
     private readonly AppDbContext _context;
     private readonly ILogger<HomeController> _logger;
+    private readonly CurrentUserAccess _access;
 
-    public HomeController(AppDbContext context, ILogger<HomeController> logger)
+    public HomeController(AppDbContext context, ILogger<HomeController> logger, CurrentUserAccess access)
     {
         _context = context;
         _logger = logger;
+        _access = access;
     }
 
     public async Task<IActionResult> Index()
@@ -91,21 +94,40 @@ public class HomeController : Controller
 
     private async Task<List<TableCountViewModel>> GetTableCountsAsync()
     {
-        var counts = new List<TableCountViewModel>
+        var counts = new List<TableCountViewModel>();
+
+        if (!_access.IsAuthenticated)
+            return counts;
+
+        if (_access.IsAdmin)
         {
-            new("Customers", await _context.Customers.IgnoreQueryFilters().CountAsync(), "Customers", "bi-people-fill", "Directory"),
-            new("Addresses", await _context.Addresses.IgnoreQueryFilters().CountAsync(), "Addresses", "bi-geo-alt-fill", "Directory"),
-            new("StoreCategories", await _context.StoreCategories.IgnoreQueryFilters().CountAsync(), "StoreCategories", "bi-tags-fill", "Catalog"),
-            new("Stores", await _context.Stores.IgnoreQueryFilters().CountAsync(), "Stores", "bi-shop", "Catalog"),
-            new("Products", await _context.Products.IgnoreQueryFilters().CountAsync(), "Products", "bi-box-seam-fill", "Catalog"),
-            new("Orders", await _context.Orders.IgnoreQueryFilters().CountAsync(), "Orders", "bi-bag-fill", "Orders"),
-            new("OrderDetails", await _context.OrderDetails.IgnoreQueryFilters().CountAsync(), null, "bi-list-check", "Orders"),
-            new("OrderStatuses", await _context.OrderStatuses.IgnoreQueryFilters().CountAsync(), "OrderStatuses", "bi-signpost-2-fill", "Orders"),
-            new("DeliveryDrivers", await _context.DeliveryDrivers.IgnoreQueryFilters().CountAsync(), "DeliveryDrivers", "bi-truck", "Directory"),
-            new("PaymentMethods", await _context.PaymentMethods.IgnoreQueryFilters().CountAsync(), "PaymentMethods", "bi-credit-card-2-front-fill", "Orders"),
-            new("Payments", await _context.Payments.IgnoreQueryFilters().CountAsync(), "Payments", "bi-cash-stack", "Orders"),
-            new("Reviews", await _context.Reviews.IgnoreQueryFilters().CountAsync(), "Reviews", "bi-chat-square-text-fill", "Catalog")
-        };
+            counts.Add(new("Customers", await _context.Customers.IgnoreQueryFilters().CountAsync(), "Customers", "bi-people-fill", "Directory"));
+            counts.Add(new("Addresses", await _context.Addresses.IgnoreQueryFilters().CountAsync(), "Addresses", "bi-geo-alt-fill", "Directory"));
+            counts.Add(new("OrderDetails", await _context.OrderDetails.IgnoreQueryFilters().CountAsync(), null, "bi-list-check", "Orders"));
+        }
+
+        if (!_access.IsCustomer)
+            counts.Add(new("StoreCategories", await _context.StoreCategories.IgnoreQueryFilters().CountAsync(), "StoreCategories", "bi-tags-fill", "Catalog"));
+
+        counts.Add(new("Stores", await _access.ScopeStores(_context.Stores).CountAsync(), "Stores", "bi-shop", "Catalog"));
+        counts.Add(new("Products", await _access.ScopeProducts(_context.Products).CountAsync(), "Products", "bi-box-seam-fill", "Catalog"));
+        counts.Add(new("Orders", await _access.ScopeOrders(_context.Orders).CountAsync(), "Orders", "bi-bag-fill", "Orders"));
+
+        if (!_access.IsCustomer)
+            counts.Add(new("OrderStatuses", await _context.OrderStatuses.IgnoreQueryFilters().CountAsync(), "OrderStatuses", "bi-signpost-2-fill", "Orders"));
+
+        if (_access.IsAdmin || _access.IsStoreOwner || _access.IsDeliveryDriver)
+            counts.Add(new("DeliveryDrivers", await _access.ScopeDeliveryDrivers(_context.DeliveryDrivers).CountAsync(), "DeliveryDrivers", "bi-truck", "Directory"));
+
+        if (_access.IsAdmin || _access.IsStoreOwner)
+        {
+            counts.Add(new("PaymentMethods", await _context.PaymentMethods.IgnoreQueryFilters().CountAsync(), "PaymentMethods", "bi-credit-card-2-front-fill", "Orders"));
+            counts.Add(new("Payments", await _access.ScopePayments(_context.Payments).CountAsync(), "Payments", "bi-cash-stack", "Orders"));
+            counts.Add(new("Reviews", await _access.ScopeReviews(_context.Reviews).CountAsync(), "Reviews", "bi-chat-square-text-fill", "Catalog"));
+        }
+
+        if (_access.IsDeliveryDriver)
+            counts.Add(new("Addresses", await _access.ScopeAddresses(_context.Addresses).CountAsync(), "Addresses", "bi-geo-alt-fill", "Directory"));
 
         return counts;
     }

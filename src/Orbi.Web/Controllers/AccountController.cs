@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
 using Orbi.Web.Security;
@@ -160,6 +161,54 @@ public class AccountController : Controller
     }
 
     [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Profile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Challenge();
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "User";
+        var model = await BuildProfileViewModelAsync(user, role);
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Profile(ProfileViewModel model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return Challenge();
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "User";
+        var currentModel = await BuildProfileViewModelAsync(user, role);
+        model.Email = currentModel.Email;
+        model.Role = currentModel.Role;
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.PhoneNumber = model.Phone;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            AddIdentityErrors(result);
+            return View(model);
+        }
+
+        await SyncRoleProfileAsync(user.Id, role, model);
+
+        TempData["Success"] = "Profile updated successfully.";
+        return RedirectToAction(nameof(Profile));
+    }
+
+    [HttpGet]
     public IActionResult Login()
     {
         if (_signInManager.IsSignedIn(User))
@@ -263,5 +312,83 @@ public class AccountController : Controller
 
             ModelState.AddModelError(field, error.Description);
         }
+    }
+
+    private async Task<ProfileViewModel> BuildProfileViewModelAsync(ApplicationUser user, string role)
+    {
+        var model = new ProfileViewModel
+        {
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? "",
+            Phone = user.PhoneNumber ?? "",
+            Email = user.Email ?? "",
+            Role = role
+        };
+
+        if (string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName) || string.IsNullOrWhiteSpace(model.Phone))
+        {
+            if (role == "Customer")
+            {
+                var customer = await _context.Customers
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.UserId == user.Id);
+
+                if (customer is not null)
+                {
+                    model.FirstName = string.IsNullOrWhiteSpace(model.FirstName) ? customer.FirstName : model.FirstName;
+                    model.LastName = string.IsNullOrWhiteSpace(model.LastName) ? customer.LastName : model.LastName;
+                    model.Phone = string.IsNullOrWhiteSpace(model.Phone) ? customer.Phone : model.Phone;
+                }
+            }
+            else if (role == "DeliveryDriver")
+            {
+                var driver = await _context.DeliveryDrivers
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.UserId == user.Id);
+
+                if (driver is not null)
+                {
+                    model.FirstName = string.IsNullOrWhiteSpace(model.FirstName) ? driver.FirstName : model.FirstName;
+                    model.LastName = string.IsNullOrWhiteSpace(model.LastName) ? driver.LastName : model.LastName;
+                    model.Phone = string.IsNullOrWhiteSpace(model.Phone) ? driver.Phone : model.Phone;
+                }
+            }
+        }
+
+        return model;
+    }
+
+    private async Task SyncRoleProfileAsync(string userId, string role, ProfileViewModel model)
+    {
+        if (role == "Customer")
+        {
+            var customer = await _context.Customers
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (customer is not null)
+            {
+                customer.FirstName = model.FirstName;
+                customer.LastName = model.LastName;
+                customer.Phone = model.Phone;
+            }
+        }
+        else if (role == "DeliveryDriver")
+        {
+            var driver = await _context.DeliveryDrivers
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (driver is not null)
+            {
+                driver.FirstName = model.FirstName;
+                driver.LastName = model.LastName;
+                driver.Phone = model.Phone;
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

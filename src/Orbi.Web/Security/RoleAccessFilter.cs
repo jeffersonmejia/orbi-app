@@ -55,9 +55,9 @@ public class RoleAccessFilter : IAsyncActionFilter
 
         return controller switch
         {
-            "StoreCategories" => isRead,
-            "OrderStatuses" => isRead,
-            "PaymentMethods" => (_access.IsCustomer || _access.IsStoreOwner) && isRead,
+            "StoreCategories" => !_access.IsCustomer && isRead,
+            "OrderStatuses" => !_access.IsCustomer && isRead,
+            "PaymentMethods" => _access.IsStoreOwner && isRead,
 
             "Stores" => isRead ||
                 (_access.IsStoreOwner && !isDelete && (isCreate || isEdit)),
@@ -65,10 +65,9 @@ public class RoleAccessFilter : IAsyncActionFilter
             "Products" => isRead ||
                 (_access.IsStoreOwner && (isCreate || isEdit || isDelete)),
 
-            "Customers" => _access.IsCustomer && !isCreate && !isDelete && (isRead || isEdit),
+            "Customers" => false,
 
-            "Addresses" => _access.IsCustomer && (isRead || isCreate || isEdit || isDelete) ||
-                _access.IsDeliveryDriver && isRead,
+            "Addresses" => _access.IsDeliveryDriver && isRead,
 
             "Orders" => (_access.IsStoreOwner || _access.IsDeliveryDriver) && (isRead || isEdit) ||
                 _access.IsCustomer && (isRead || isCreate),
@@ -76,11 +75,9 @@ public class RoleAccessFilter : IAsyncActionFilter
             "DeliveryDrivers" => _access.IsDeliveryDriver && !isCreate && !isDelete && (isRead || isEdit) ||
                 _access.IsStoreOwner && isRead,
 
-            "Payments" => _access.IsStoreOwner && isRead ||
-                _access.IsCustomer && (isRead || isCreate),
+            "Payments" => _access.IsStoreOwner && isRead,
 
-            "Reviews" => _access.IsStoreOwner && isRead ||
-                _access.IsCustomer && (isRead || isCreate || isEdit || isDelete),
+            "Reviews" => _access.IsStoreOwner && isRead,
 
             _ => false
         };

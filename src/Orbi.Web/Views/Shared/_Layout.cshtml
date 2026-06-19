@@ -36,19 +36,19 @@
         var isCustomer = User.IsInRole("Customer");
 
         var canProducts = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
-        var canStoreCategories = isSignedIn;
+        var canStoreCategories = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver);
         var canStores = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
-        var canReviews = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
+        var canReviews = isSignedIn && (isAdmin || isStoreOwner);
         var canCatalog = canProducts || canStoreCategories || canStores || canReviews;
 
         var canOrders = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
-        var canOrderStatuses = isSignedIn;
-        var canPayments = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
-        var canPaymentMethods = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
+        var canOrderStatuses = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver);
+        var canPayments = isSignedIn && (isAdmin || isStoreOwner);
+        var canPaymentMethods = isSignedIn && (isAdmin || isStoreOwner);
         var canOrdersGroup = canOrders || canOrderStatuses || canPayments || canPaymentMethods;
 
-        var canCustomers = isSignedIn && (isAdmin || isCustomer);
-        var canAddresses = isSignedIn && (isAdmin || isDeliveryDriver || isCustomer);
+        var canCustomers = isSignedIn && isAdmin;
+        var canAddresses = isSignedIn && (isAdmin || isDeliveryDriver);
         var canDeliveryDrivers = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver);
         var canDirectory = canCustomers || canAddresses || canDeliveryDrivers;
 
@@ -212,13 +212,13 @@
                 </div>
             }
             <div class="aside-divider auth-divider" aria-hidden="true"></div>
-            <span class="island-link island-link--static">
+            <a class="island-link island-link--static @(currentController == "Account" ? "active" : "")" asp-controller="Account" asp-action="Profile" title="Profile">
                 <i class="bi bi-person-circle"></i>
                 <span class="aside-user">
                     <span class="aside-user__name">@firstName</span>
                     <span class="aside-user__role">@roleName</span>
                 </span>
-            </span>
+            </a>
             <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                 <button type="submit" class="island-link island-link--btn">
                     <i class="bi bi-box-arrow-right"></i>

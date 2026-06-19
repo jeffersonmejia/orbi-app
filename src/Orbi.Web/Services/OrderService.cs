@@ -128,6 +128,12 @@ public class OrderService : IEntityService<Order, OrderViewModel>
         if (_access.IsCustomer)
         {
             viewModel.CustomerId = await _access.RequireOwnCustomerIdAsync(_context);
+            viewModel.DeliveryDriverId = null;
+            viewModel.OrderStatusId = await _context.OrderStatuses
+                .Where(status => status.Name == "Pending")
+                .Select(status => status.Id)
+                .SingleAsync();
+
             var ownsAddress = await _context.Addresses
                 .AnyAsync(a => a.Id == viewModel.AddressId && a.CustomerId == viewModel.CustomerId);
 

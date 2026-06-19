@@ -9,7 +9,7 @@ Orbi uses ASP.NET Identity roles stored in `AspNetRoles`. These are application 
 | `Admin` | Full system administration and operational support. |
 | `StoreOwner` | Manages one store, its products and incoming orders. |
 | `DeliveryDriver` | Manages assigned deliveries and availability. |
-| `Customer` | Places orders and manages personal addresses, payments and reviews. |
+| `Customer` | Browses stores/products and places orders. Personal data is managed through Profile. |
 
 ## Default Seeded Admin
 
@@ -28,21 +28,21 @@ Unauthenticated users only see `Sign In` and `Sign up` in the aside. Authenticat
 | `Admin` | Read | Full CRUD | Full CRUD | Full CRUD |
 | `StoreOwner` | Read | Own store/products, own store reviews read, categories read | Own store orders read/edit, own store payments read, statuses/pay methods read | Drivers read only |
 | `DeliveryDriver` | Read | Stores and products read only | Assigned orders read/edit status, statuses read | Own driver profile, assigned order addresses read |
-| `Customer` | Read | Stores/products/categories read, own reviews CRUD | Own orders read/create, own payments read/create, statuses/pay methods read | Own profile and own addresses CRUD |
+| `Customer` | Read | Stores/products read | Own orders read/create | Hidden; profile only |
 
 | Aside section | Module | Admin | StoreOwner | DeliveryDriver | Customer |
 | --- | --- | --- | --- | --- | --- |
 | Home | Dashboard | Read | Read | Read | Read |
 | Catalog | Products | CRUD | Own store CRUD | Read | Read |
-| Catalog | Categories | CRUD | Read | Read | Read |
+| Catalog | Categories | CRUD | Read | Read | Hidden |
 | Catalog | Stores | CRUD | Own store CRUD | Read | Read |
-| Catalog | Reviews | CRUD | Own store read | No access | Own CRUD |
+| Catalog | Reviews | CRUD | Own store read | No access | Hidden |
 | Orders | Orders | CRUD | Own store read/edit | Assigned read/edit status | Own read/create |
-| Orders | Statuses | CRUD | Read | Read | Read |
-| Orders | Payments | CRUD | Own store read | No access | Own read/create |
-| Orders | Pay Methods | CRUD | Read | No access | Read |
-| Directory | Customers | CRUD | No access | No access | Own read/edit |
-| Directory | Addresses | CRUD | No access | Assigned order read | Own CRUD |
+| Orders | Statuses | CRUD | Read | Read | Hidden |
+| Orders | Payments | CRUD | Own store read | No access | Hidden |
+| Orders | Pay Methods | CRUD | Read | No access | Hidden |
+| Directory | Customers | CRUD | No access | No access | Hidden; use Profile |
+| Directory | Addresses | CRUD | No access | Assigned order read | Hidden |
 | Directory | Drivers | CRUD | Read | Own read/edit | No access |
 
 ## Ownership Rules

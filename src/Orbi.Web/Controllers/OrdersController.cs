@@ -52,6 +52,12 @@ public class OrdersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(OrderViewModel viewModel)
     {
+        if (_access.IsCustomer)
+        {
+            ModelState.Remove(nameof(OrderViewModel.CustomerId));
+            ModelState.Remove(nameof(OrderViewModel.OrderStatusId));
+        }
+
         if (ModelState.IsValid)
         {
             await _orderService.CreateAsync(viewModel);
