@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Data.Common;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
@@ -10,13 +12,65 @@ namespace Orbi.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<HomeController> _logger;
 
-    public HomeController(AppDbContext context)
+    public HomeController(AppDbContext context, ILogger<HomeController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IActionResult> Index()
+    {
+        try
+        {
+            var model = new HomeDashboardViewModel(await GetTableCountsAsync());
+            return View(model);
+        }
+        catch (Exception ex) when (IsDatabaseAccessError(ex))
+        {
+            _logger.LogError(ex, "Unable to load home record counts.");
+            Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+
+            return View("Error", new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                StatusCode = StatusCodes.Status503ServiceUnavailable,
+                Message = "The database is temporarily unavailable. Please try again later."
+            });
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RecordCounts()
+    {
+        try
+        {
+            var model = new HomeDashboardViewModel(await GetTableCountsAsync());
+
+            return Json(new
+            {
+                totalRecords = model.TotalRecords,
+                maxRecords = model.MaxRecords,
+                tableCounts = model.TableCounts.Select(item => new
+                {
+                    tableName = item.TableName,
+                    count = item.Count
+                })
+            });
+        }
+        catch (Exception ex) when (IsDatabaseAccessError(ex))
+        {
+            _logger.LogError(ex, "Unable to refresh home record counts.");
+
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                error = "Database unavailable"
+            });
+        }
+    }
+
+    private async Task<List<TableCountViewModel>> GetTableCountsAsync()
     {
         var counts = new List<TableCountViewModel>
         {
@@ -34,8 +88,20 @@ public class HomeController : Controller
             new("Reviews", await _context.Reviews.IgnoreQueryFilters().CountAsync(), "Reviews", "bi-chat-square-text-fill", "Catalog")
         };
 
-        var model = new HomeDashboardViewModel(counts);
-        return View(model);
+        return counts;
+    }
+
+    private static bool IsDatabaseAccessError(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is DbException or TimeoutException or InvalidOperationException)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public IActionResult Privacy()
@@ -68,6 +134,26 @@ public class HomeController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        var exception = HttpContext.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+        var isDatabaseError = exception is not null && IsDatabaseAccessError(exception);
+        var statusCode = isDatabaseError
+            ? StatusCodes.Status503ServiceUnavailable
+            : StatusCodes.Status500InternalServerError;
+
+        Response.StatusCode = statusCode;
+
+        if (exception is not null)
+        {
+            _logger.LogError(exception, "Unhandled request error.");
+        }
+
+        return View(new ErrorViewModel
+        {
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+            StatusCode = statusCode,
+            Message = isDatabaseError
+                ? "The database is temporarily unavailable. Please try again later."
+                : "An error occurred while processing your request."
+        });
     }
 }

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
@@ -44,10 +45,7 @@ builder.Services.AddScoped<ReviewService>();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-}
+app.UseExceptionHandler("/Home/Error");
 
 app.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}");
 
@@ -65,12 +63,34 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await context.Database.MigrateAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await DbSeeder.SeedAsync(context, userManager, roleManager);
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await context.Database.MigrateAsync();
+
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        await DbSeeder.SeedAsync(context, userManager, roleManager);
+    }
+    catch (Exception ex) when (IsDatabaseStartupError(ex))
+    {
+        logger.LogError(ex, "Database startup tasks could not be completed.");
+    }
 }
 
 await app.RunAsync();
+
+static bool IsDatabaseStartupError(Exception exception)
+{
+    for (var current = exception; current is not null; current = current.InnerException)
+    {
+        if (current is DbException or DbUpdateException or TimeoutException or InvalidOperationException)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
