@@ -95,3 +95,11 @@ graph TD;
     C-->G[Create own orders];
     C-->H[Profile only];
 ```
+
+## 5. Database and Resource Optimization
+
+The application is prepared for large data loads at both the code and infrastructure levels. In the ASP.NET Core services, list queries are built with `IQueryable` so filtering, ordering and pagination are executed by PostgreSQL instead of loading full tables into memory. Read-heavy screens use `AsNoTracking()` to reduce Entity Framework Core tracking overhead, while `Skip` and `Take` keep table views bounded even when the database contains hundreds of thousands of records.
+
+The database model also includes indexes for common access patterns such as active records, names, emails, store ownership, customer ownership, order dates, order statuses and delivery assignments. These indexes support faster searches, role-scoped reads and paginated screens during high-volume usage.
+
+Docker Compose is also tuned for controlled resource usage. The PostgreSQL container sets explicit CPU and memory limits, reduces maximum connections, configures cache and work memory, enables WAL compression and adjusts checkpoint timing. This keeps the local environment stable while still supporting bulk seed data and large query workloads.
