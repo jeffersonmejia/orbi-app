@@ -1,10 +1,16 @@
 ﻿@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
+    var icon = Model.StatusCode == StatusCodes.Status503ServiceUnavailable
+        ? "bi-cloud-slash-fill"
+        : "bi-exclamation-triangle-fill";
 }
 
 <section class="error-page">
     <div class="error-card glass">
+        <div class="error-icon" aria-hidden="true">
+            <i class="bi @icon"></i>
+        </div>
         <h1>Error.</h1>
         <h2>
             @(Model.StatusCode.HasValue ? $"Status {Model.StatusCode}" : "An error occurred while processing your request.")
@@ -15,6 +21,12 @@
             <p>@Model.Message</p>
         }
 
+        @if (Model.StatusCode == StatusCodes.Status503ServiceUnavailable)
+        {
+            <p class="error-retry">
+                Reconnecting automatically...
+            </p>
+        }
     </div>
 </section>
 
@@ -29,9 +41,29 @@
         border: 0;
         border-radius: var(--radius);
         max-width: 520px;
-        padding: 1.5rem;
+        padding: 1.65rem;
         text-align: center;
         width: min(100%, 520px);
+    }
+
+    .error-icon {
+        align-items: center;
+        background: var(--glass-sheen), rgba(237, 233, 254, 0.58);
+        background-blend-mode: screen, normal;
+        backdrop-filter: blur(14px) saturate(190%);
+        -webkit-backdrop-filter: blur(14px) saturate(190%);
+        border-radius: 50%;
+        color: var(--purple-600);
+        display: inline-flex;
+        height: 3.25rem;
+        justify-content: center;
+        margin-bottom: 0.85rem;
+        width: 3.25rem;
+    }
+
+    .error-icon i {
+        font-size: 1.35rem;
+        line-height: 1;
     }
 
     .error-card h1 {
@@ -53,4 +85,120 @@
         margin: 0;
     }
 
+    .error-retry {
+        color: var(--purple-600) !important;
+        font-size: 0.82rem;
+        margin-top: 0.85rem !important;
+    }
 </style>
+
+@if (Model.StatusCode == StatusCodes.Status503ServiceUnavailable)
+{
+    @section Scripts {
+        <script>
+            (() => {
+                const statusEndpoint = '@Url.Action("DbStatus", "Home")';
+                const homeEndpoint = '@Url.Action("Index", "Home")';
+                let intervalId;
+                let isRecovering = false;
+
+                window.startHomeRecordRefresh = window.startHomeRecordRefresh || (() => {
+                    let refreshIntervalId;
+
+                    async function refreshRecordCounts() {
+                        const endpoint = '@Url.Action("RecordCounts", "Home")';
+                        const formatter = new Intl.NumberFormat('en-US');
+                        const total = document.querySelector('[data-total-records]');
+                        const rows = Array.from(document.querySelectorAll('[data-chart-row]'));
+
+                        if (!total || rows.length === 0) return;
+
+                        try {
+                            const response = await fetch(endpoint, {
+                                headers: { 'Accept': 'application/json' },
+                                cache: 'no-store'
+                            });
+
+                            if (!response.ok) return;
+
+                            const data = await response.json();
+                            const maxRecords = data.maxRecords || 0;
+                            const counts = new Map(data.tableCounts.map(item => [item.tableName, item.count]));
+
+                            total.textContent = formatter.format(data.totalRecords || 0);
+
+                            rows.forEach((row) => {
+                                const tableName = row.dataset.tableName;
+                                const count = counts.get(tableName);
+                                if (count === undefined) return;
+
+                                const height = maxRecords === 0 ? 0 : Math.max(8, Math.round(count * 100 / maxRecords));
+                                row.style.setProperty('--bar-height', `${height}%`);
+                                row.querySelector('[data-record-count]').textContent = formatter.format(count);
+                            });
+                        } catch {
+                            // Keep the last rendered values if the refresh fails.
+                        }
+                    }
+
+                    return () => {
+                        window.clearInterval(refreshIntervalId);
+                        refreshRecordCounts();
+                        refreshIntervalId = window.setInterval(refreshRecordCounts, 5000);
+                    };
+                })();
+
+                async function renderHomeWithoutReload() {
+                    const response = await fetch(homeEndpoint, {
+                        headers: { 'Accept': 'text/html' },
+                        cache: 'no-store'
+                    });
+
+                    if (!response.ok) return false;
+
+                    const html = await response.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const nextMain = doc.querySelector('main');
+                    const currentMain = document.querySelector('main');
+
+                    if (!nextMain || !currentMain) return false;
+
+                    currentMain.innerHTML = nextMain.innerHTML;
+                    document.body.className = doc.body.className;
+                    document.title = doc.title;
+                    window.history.replaceState({}, '', homeEndpoint || '/');
+                    window.startHomeRecordRefresh();
+
+                    return true;
+                }
+
+                async function reconnectWhenReady() {
+                    if (isRecovering) return;
+
+                    try {
+                        const response = await fetch(statusEndpoint, {
+                            headers: { 'Accept': 'application/json' },
+                            cache: 'no-store'
+                        });
+
+                        if (response.ok) {
+                            isRecovering = true;
+                            const recovered = await renderHomeWithoutReload();
+
+                            if (recovered) {
+                                window.clearInterval(intervalId);
+                            } else {
+                                isRecovering = false;
+                            }
+                        }
+                    } catch {
+                        // Keep waiting silently while the service recovers.
+                    }
+                }
+
+                intervalId = window.setInterval(reconnectWhenReady, 4000);
+                reconnectWhenReady();
+            })();
+        </script>
+    }
+}

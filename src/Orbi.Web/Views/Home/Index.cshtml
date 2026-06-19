@@ -263,43 +263,53 @@
 @section Scripts {
     <script>
         (() => {
-            const endpoint = '@Url.Action("RecordCounts", "Home")';
-            const formatter = new Intl.NumberFormat('en-US');
-            const total = document.querySelector('[data-total-records]');
-            const rows = Array.from(document.querySelectorAll('[data-chart-row]'));
+            window.startHomeRecordRefresh = window.startHomeRecordRefresh || (() => {
+                let intervalId;
 
-            async function refreshRecordCounts() {
-                try {
-                    const response = await fetch(endpoint, {
-                        headers: { 'Accept': 'application/json' },
-                        cache: 'no-store'
-                    });
+                async function refreshRecordCounts() {
+                    const endpoint = '@Url.Action("RecordCounts", "Home")';
+                    const formatter = new Intl.NumberFormat('en-US');
+                    const total = document.querySelector('[data-total-records]');
+                    const rows = Array.from(document.querySelectorAll('[data-chart-row]'));
 
-                    if (!response.ok) return;
+                    if (!total || rows.length === 0) return;
 
-                    const data = await response.json();
-                    const maxRecords = data.maxRecords || 0;
-                    const counts = new Map(data.tableCounts.map(item => [item.tableName, item.count]));
+                    try {
+                        const response = await fetch(endpoint, {
+                            headers: { 'Accept': 'application/json' },
+                            cache: 'no-store'
+                        });
 
-                    if (total) {
+                        if (!response.ok) return;
+
+                        const data = await response.json();
+                        const maxRecords = data.maxRecords || 0;
+                        const counts = new Map(data.tableCounts.map(item => [item.tableName, item.count]));
+
                         total.textContent = formatter.format(data.totalRecords || 0);
+
+                        rows.forEach((row) => {
+                            const tableName = row.dataset.tableName;
+                            const count = counts.get(tableName);
+                            if (count === undefined) return;
+
+                            const height = maxRecords === 0 ? 0 : Math.max(8, Math.round(count * 100 / maxRecords));
+                            row.style.setProperty('--bar-height', `${height}%`);
+                            row.querySelector('[data-record-count]').textContent = formatter.format(count);
+                        });
+                    } catch {
+                        // Keep the last rendered values if the refresh fails.
                     }
-
-                    rows.forEach((row) => {
-                        const tableName = row.dataset.tableName;
-                        const count = counts.get(tableName);
-                        if (count === undefined) return;
-
-                        const height = maxRecords === 0 ? 0 : Math.max(8, Math.round(count * 100 / maxRecords));
-                        row.style.setProperty('--bar-height', `${height}%`);
-                        row.querySelector('[data-record-count]').textContent = formatter.format(count);
-                    });
-                } catch {
-                    // Keep the last rendered values if the refresh fails.
                 }
-            }
 
-            window.setInterval(refreshRecordCounts, 5000);
+                return () => {
+                    window.clearInterval(intervalId);
+                    refreshRecordCounts();
+                    intervalId = window.setInterval(refreshRecordCounts, 5000);
+                };
+            })();
+
+            window.startHomeRecordRefresh();
         })();
     </script>
 }

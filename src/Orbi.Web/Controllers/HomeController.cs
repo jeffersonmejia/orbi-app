@@ -70,6 +70,25 @@ public class HomeController : Controller
         }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> DbStatus()
+    {
+        try
+        {
+            await _context.Database.CanConnectAsync();
+            return Ok(new { available = true });
+        }
+        catch (Exception ex) when (IsDatabaseAccessError(ex))
+        {
+            _logger.LogWarning(ex, "Database health check failed.");
+
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                available = false
+            });
+        }
+    }
+
     private async Task<List<TableCountViewModel>> GetTableCountsAsync()
     {
         var counts = new List<TableCountViewModel>
