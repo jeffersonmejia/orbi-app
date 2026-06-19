@@ -9,6 +9,18 @@
         const int maxLength = 9;
         return value.Length <= maxLength ? value : value[..maxLength] + "...";
     }
+
+    string FormatRecordCount(int count)
+    {
+        if (count < 1000)
+        {
+            return count.ToString("N0", englishCulture);
+        }
+
+        var thousands = count / 1000.0;
+        var format = count < 10000 && count % 1000 != 0 ? "0.#" : "N0";
+        return $"{thousands.ToString(format, englishCulture)} mil";
+    }
 }
 
 <section class="home-dashboard">
@@ -16,14 +28,14 @@
         <div class="home-total glass" aria-label="Total records" data-reveal>
             <i class="bi bi-database-fill"></i>
             <span>Total records</span>
-            <strong data-total-records data-current-count="@Model.TotalRecords">@Model.TotalRecords.ToString("N0", englishCulture)</strong>
+            <strong data-total-records data-current-count="@Model.TotalRecords">@FormatRecordCount(Model.TotalRecords)</strong>
         </div>
         <div class="home-chart glass" data-reveal>
             @foreach (var item in Model.TableCounts)
             {
                 var height = Model.MaxRecords == 0 ? 0 : Math.Max(8, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
                 <div class="home-chart__row" data-chart-row data-table-name="@item.TableName" style="--bar-height: @height%;">
-                    <span class="home-chart__value" data-record-count data-current-count="@item.Count">@item.Count.ToString("N0", englishCulture)</span>
+                    <span class="home-chart__value" data-record-count data-current-count="@item.Count">@FormatRecordCount(item.Count)</span>
                     <div class="home-chart__track" aria-label="@item.TableName: @item.Count records">
                         <div class="home-chart__bar"></div>
                     </div>
@@ -316,6 +328,9 @@
                 async function refreshRecordCounts() {
                     const endpoint = '@Url.Action("RecordCounts", "Home")';
                     const formatter = new Intl.NumberFormat('en-US');
+                    const compactFormatter = new Intl.NumberFormat('en-US', {
+                        maximumFractionDigits: 1
+                    });
                     const total = document.querySelector('[data-total-records]');
                     const rows = Array.from(document.querySelectorAll('[data-chart-row]'));
                     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -324,6 +339,14 @@
 
                     function readCount(element) {
                         return Number(element.dataset.currentCount || element.textContent.replace(/,/g, '')) || 0;
+                    }
+
+                    function formatRecordCount(count) {
+                        if (count < 1000) {
+                            return formatter.format(count);
+                        }
+
+                        return `${compactFormatter.format(count / 1000)} mil`;
                     }
 
                     function pulse(element) {
@@ -341,7 +364,7 @@
                         element.dataset.currentCount = nextCount;
 
                         if (reduceMotion || previousCount === nextCount) {
-                            element.textContent = formatter.format(nextCount);
+                            element.textContent = formatRecordCount(nextCount);
                             return false;
                         }
 
@@ -352,14 +375,14 @@
                         function tick(now) {
                             const progress = Math.min((now - startedAt) / duration, 1);
                             const current = Math.round(previousCount + (nextCount - previousCount) * easeOut(progress));
-                            element.textContent = formatter.format(current);
+                            element.textContent = formatRecordCount(current);
 
                             if (progress < 1) {
                                 window.requestAnimationFrame(tick);
                                 return;
                             }
 
-                            element.textContent = formatter.format(nextCount);
+                            element.textContent = formatRecordCount(nextCount);
                         }
 
                         window.requestAnimationFrame(tick);

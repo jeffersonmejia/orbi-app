@@ -1,7 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Orbi.Web.Data
 @using Orbi.Web.Models
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject AppDbContext DbContext
 
 <!DOCTYPE html>
 <html lang="en">
@@ -52,14 +55,29 @@
         var isOrders = currentController is "Orders" or "OrderStatuses" or "Payments" or "PaymentMethods";
         var isDirectory = currentController is "Customers" or "Addresses" or "DeliveryDrivers";
 
-        var identityName = string.IsNullOrWhiteSpace(User.Identity?.Name)
-            ? "User"
-            : User.Identity.Name;
-        var firstName = identityName.Split('@', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "User";
-        firstName = firstName.Split('.', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? firstName;
-        firstName = string.IsNullOrWhiteSpace(firstName)
-            ? "User"
-            : char.ToUpperInvariant(firstName[0]) + firstName[1..];
+        var currentUser = isSignedIn ? await UserManager.GetUserAsync(User) : null;
+        var firstName = currentUser?.FirstName;
+        if (isSignedIn && string.IsNullOrWhiteSpace(firstName) && currentUser?.Id is { } currentUserId)
+        {
+            firstName = await DbContext.Customers
+                .IgnoreQueryFilters()
+                .Where(customer => customer.UserId == currentUserId)
+                .Select(customer => customer.FirstName)
+                .FirstOrDefaultAsync();
+
+            firstName ??= await DbContext.DeliveryDrivers
+                .IgnoreQueryFilters()
+                .Where(driver => driver.UserId == currentUserId)
+                .Select(driver => driver.FirstName)
+                .FirstOrDefaultAsync();
+
+            firstName ??= await DbContext.Stores
+                .IgnoreQueryFilters()
+                .Where(store => store.UserId == currentUserId)
+                .Select(store => store.Name)
+                .FirstOrDefaultAsync();
+        }
+        firstName = string.IsNullOrWhiteSpace(firstName) ? "User" : firstName;
         var roleName = isAdmin
             ? "Admin"
             : isStoreOwner

@@ -20,17 +20,26 @@ public static class DbSeeder
 
         if (userManager != null)
         {
-            if (await userManager.FindByEmailAsync("admin@orbi.com") == null)
+            var adminUser = await userManager.FindByEmailAsync("admin@orbi.com");
+            if (adminUser == null)
             {
                 var admin = new ApplicationUser
                 {
                     UserName = "admin@orbi.com",
                     Email = "admin@orbi.com",
+                    FirstName = "Admin",
+                    LastName = "Orbi",
                     EmailConfirmed = true
                 };
                 var result = await userManager.CreateAsync(admin, "Admin1234!");
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            else if (string.IsNullOrWhiteSpace(adminUser.FirstName))
+            {
+                adminUser.FirstName = "Admin";
+                adminUser.LastName = "Orbi";
+                await userManager.UpdateAsync(adminUser);
             }
         }
 

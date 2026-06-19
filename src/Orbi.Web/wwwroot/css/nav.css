@@ -87,13 +87,13 @@
 }
 
 .aside-user__name {
-  color: var(--color-text);
+  color: #5f5b6b;
   font-size: 0.82rem;
   font-weight: 600;
 }
 
 .aside-user__role {
-  color: var(--color-text-muted);
+  color: #9a96a8;
   font-size: 0.66rem;
   font-weight: 500;
 }
