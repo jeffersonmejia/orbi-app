@@ -46,6 +46,30 @@ print_table_count_summary() {
     " | awk '{ printf "Total tables: %s\n\n", $1 }'
 }
 
+print_database_row_summary() {
+    run_psql -Atc "
+        WITH table_names AS (
+            SELECT table_schema, table_name
+            FROM information_schema.tables
+            WHERE table_schema = '${DB_SCHEMA}'
+              AND table_type = 'BASE TABLE'
+        ),
+        row_totals AS (
+            SELECT (xpath('/row/count/text()',
+                    query_to_xml(
+                        format('SELECT COUNT(*) AS count FROM %I.%I', table_schema, table_name),
+                        false,
+                        true,
+                        ''
+                    )
+                ))[1]::text::bigint AS total_rows
+            FROM table_names
+        )
+        SELECT COALESCE(SUM(total_rows), 0)
+        FROM row_totals;
+    " | awk '{ printf "Total records: %s\n\n", $1 }'
+}
+
 print_row_totals_by_table() {
     run_psql -c "
         WITH table_names AS (
@@ -73,6 +97,7 @@ main() {
     ensure_container_is_running
     print_header
     print_table_count_summary
+    print_database_row_summary
     print_row_totals_by_table
 }
 
