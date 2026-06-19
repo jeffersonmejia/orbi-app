@@ -1,0 +1,44 @@
+@model PaginationViewModel
+
+@if (Model.TotalPages > 1)
+{
+    var firstUrl = Url.Action("Index", new { page = 1, searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+    var previousUrl = Url.Action("Index", new { page = Model.PageIndex - 1, searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+    var nextUrl = Url.Action("Index", new { page = Model.PageIndex + 1, searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+    var lastUrl = Url.Action("Index", new { page = Model.TotalPages, searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+    var currentUrl = Url.Action("Index", new { page = Model.PageIndex, searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+    var pageUrlTemplate = Url.Action("Index", new { page = "__page__", searchField = Model.SearchField, searchTerm = Model.SearchTerm });
+
+    <nav class="table-pagination" aria-label="Table pagination">
+        <a class="page-link @(HasPreviousPage() ? "" : "disabled")" href="@firstUrl" aria-label="First page">
+            <i class="bi bi-chevron-double-left"></i>
+        </a>
+        <a class="page-link @(HasPreviousPage() ? "" : "disabled")" href="@previousUrl" aria-label="Previous page">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+
+        <span class="pagination-ellipsis" aria-hidden="true">...</span>
+
+        <select class="form-select pagination-select" aria-label="Select page"
+                data-pagination-select
+                data-current-page="@Model.PageIndex"
+                data-total-pages="@Model.TotalPages"
+                data-page-url-template="@pageUrlTemplate">
+            <option value="@currentUrl" selected>Page @Model.PageIndex of @Model.TotalPages</option>
+        </select>
+
+        <span class="pagination-ellipsis" aria-hidden="true">...</span>
+
+        <a class="page-link @(HasNextPage() ? "" : "disabled")" href="@nextUrl" aria-label="Next page">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        <a class="page-link @(HasNextPage() ? "" : "disabled")" href="@lastUrl" aria-label="Last page">
+            <i class="bi bi-chevron-double-right"></i>
+        </a>
+    </nav>
+}
+
+@functions {
+    private bool HasPreviousPage() => Model.PageIndex > 1;
+    private bool HasNextPage() => Model.PageIndex < Model.TotalPages;
+}

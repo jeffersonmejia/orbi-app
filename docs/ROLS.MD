@@ -27,6 +27,30 @@ Anonymous users can access home, login, register, record counts and database sta
 
 ## Permission matrix
 
+```mermaid
+flowchart TD
+    Admin --> AllModules[All modules: full CRUD]
+
+    StoreOwner --> StoreOwned[Stores: own CRUD]
+    StoreOwner --> ProductOwned[Products: own store CRUD]
+    StoreOwner --> OrderOwned[Orders: own store read/edit]
+    StoreOwner --> PaymentOwned[Payments: own store read]
+    StoreOwner --> ReviewOwned[Reviews: own store read]
+    StoreOwner --> ReferenceRead[Store categories and payment methods: read]
+
+    DeliveryDriver --> DriverProfile[Delivery drivers: own read/edit]
+    DeliveryDriver --> DriverOrders[Orders: assigned read/edit status]
+    DeliveryDriver --> DriverAddresses[Addresses: assigned order read]
+    DeliveryDriver --> DriverCatalog[Stores and products: read]
+
+    Customer --> CustomerProfile[Customers: own read/edit]
+    Customer --> CustomerAddresses[Addresses: own CRUD]
+    Customer --> CustomerOrders[Orders: own read/create]
+    Customer --> CustomerPayments[Payments: own read/create]
+    Customer --> CustomerReviews[Reviews: own CRUD]
+    Customer --> CustomerCatalog[Stores, products and payment methods: read]
+```
+
 | Module | Admin | StoreOwner | DeliveryDriver | Customer |
 | --- | --- | --- | --- | --- |
 | StoreCategories | CRUD | Read | Read | Read |

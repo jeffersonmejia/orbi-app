@@ -1,49 +1,72 @@
-# API y rutas MVC
+# API and MVC Routes
 
-Orbi usa controladores MVC con el patron:
+Orbi exposes MVC routes with the default pattern:
 
 ```text
 /{Controller}/{Action}/{id?}
 ```
 
-Las listas aceptan `searchField`, `searchTerm` y `page`.
+List screens accept `searchField`, `searchTerm` and `page`.
 
-## Publico
+## Public
 
-| Metodo | Ruta | Uso |
+| Method | Route | Use |
 | --- | --- | --- |
 | GET | `/` | Home |
 | GET | `/Home/Index` | Home |
-| GET | `/Home/RecordCounts` | Conteos del grafico home |
-| GET | `/Home/DbStatus` | Estado de base de datos |
-| GET | `/Account/Login` | Login |
-| POST | `/Account/Login` | Iniciar sesion |
-| GET | `/Account/Register` | Registro |
-| POST | `/Account/Register` | Crear usuario `Customer`, `DeliveryDriver` o `StoreOwner` |
+| GET | `/Home/RecordCounts` | Home chart counts |
+| GET | `/Home/DbStatus` | Database status |
+| GET | `/Account/Login` | Login form |
+| POST | `/Account/Login` | Sign in |
+| GET | `/Account/Register` | Registration form |
+| POST | `/Account/Register` | Create `Customer`, `DeliveryDriver` or `StoreOwner` user |
 
-`POST /Account/Logout` requiere usuario autenticado.
+`POST /Account/Logout` requires an authenticated user.
 
-## Acceso por rol
+## Role Access
 
-| Modulo | Admin | StoreOwner | DeliveryDriver | Customer |
+```mermaid
+flowchart TD
+    Admin --> AllModules[All modules: CRUD]
+
+    StoreOwner --> StoreOwned[Stores: own CRUD]
+    StoreOwner --> ProductOwned[Products: own store CRUD]
+    StoreOwner --> OrderOwned[Orders: own store read/edit]
+    StoreOwner --> PaymentOwned[Payments: own store read]
+    StoreOwner --> ReviewOwned[Reviews: own store read]
+    StoreOwner --> StoreOwnerRead[Categories and payment methods: read]
+
+    DeliveryDriver --> DriverProfile[Drivers: own read/edit]
+    DeliveryDriver --> DriverOrders[Orders: assigned read/edit status]
+    DeliveryDriver --> DriverCatalog[Stores and products: read]
+
+    Customer --> CustomerProfile[Customers: own read/edit]
+    Customer --> CustomerAddresses[Addresses: own CRUD]
+    Customer --> CustomerOrders[Orders: own read/create]
+    Customer --> CustomerPayments[Payments: own read/create]
+    Customer --> CustomerReviews[Reviews: own CRUD]
+    Customer --> CustomerCatalog[Stores, products and payment methods: read]
+```
+
+| Module | Admin | StoreOwner | DeliveryDriver | Customer |
 | --- | --- | --- | --- | --- |
 | StoreCategories | CRUD | Read | Read | Read |
 | Stores | CRUD | Own CRUD | Read | Read |
 | Products | CRUD | Own store CRUD | Read | Read |
-| Customers | CRUD | Prohibido | Prohibido | Own read/edit |
-| Addresses | CRUD | Prohibido | Via pedidos asignados | Own CRUD |
+| Customers | CRUD | Forbidden | Forbidden | Own read/edit |
+| Addresses | CRUD | Forbidden | Assigned order address read | Own CRUD |
 | Orders | CRUD | Own store read/edit | Assigned read/edit status | Own read/create |
 | OrderStatuses | CRUD | Read | Read | Read |
-| DeliveryDrivers | CRUD | Read | Own read/edit | Prohibido |
-| PaymentMethods | CRUD | Read | Prohibido | Read |
-| Payments | CRUD | Own store read | Prohibido | Own read/create |
-| Reviews | CRUD | Own store read | Prohibido | Own CRUD |
+| DeliveryDrivers | CRUD | Read | Own read/edit | Forbidden |
+| PaymentMethods | CRUD | Read | Forbidden | Read |
+| Payments | CRUD | Own store read | Forbidden | Own read/create |
+| Reviews | CRUD | Own store read | Forbidden | Own CRUD |
 
-Las secciones permanecen visibles en la navegacion. El acceso no permitido responde `403` y muestra `Acceso prohibido`.
+Navigation remains visible. Forbidden access returns `403` and shows the access denied page.
 
-## Rutas CRUD
+## CRUD Routes
 
-| Accion | Metodo | Ruta |
+| Action | Method | Route |
 | --- | --- | --- |
 | Index | GET | `/{Controller}` |
 | Details | GET | `/{Controller}/Details/{id}` |
@@ -51,21 +74,21 @@ Las secciones permanecen visibles en la navegacion. El acceso no permitido respo
 | Edit | GET/POST | `/{Controller}/Edit/{id}` |
 | Delete | POST | `/{Controller}/Delete/{id}` |
 
-`Delete` es borrado logico con `IsActive = false`.
+`Delete` is a soft delete through `IsActive = false`.
 
-## Reglas de propiedad
+## Ownership Rules
 
-| Rol | Regla |
+| Role | Rule |
 | --- | --- |
 | Customer | `Customers.UserId == User.Id` |
 | StoreOwner | `Stores.UserId == User.Id` |
 | DeliveryDriver | `DeliveryDrivers.UserId == User.Id` |
 
-Las consultas sensibles se filtran por propietario en servicios. Las escrituras vuelven a validar propiedad antes de guardar.
+Sensitive queries are scoped by owner in services. Sensitive writes validate ownership again before saving.
 
-## Seguridad de entrada
+## Input Security
 
-- Todos los POST usan antiforgery token.
-- El total de pedidos se calcula en servidor.
-- El registro publico no permite crear `Admin`.
-- Los formularios solo cargan dropdowns dentro del alcance del usuario.
+- All POST actions use antiforgery tokens.
+- Order totals are calculated server-side.
+- Public registration cannot create `Admin`.
+- Form dropdowns only load records within the signed-in user's scope.

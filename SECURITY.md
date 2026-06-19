@@ -39,7 +39,7 @@ Do not publish vulnerabilities in public issues.
 
 ## Access Behavior
 
-Navigation stays visible for all authenticated roles. If a role opens a forbidden route, the app returns `403` and shows `Acceso prohibido`.
+Navigation stays visible for all authenticated roles. If a role opens a forbidden route, the app returns `403` and shows the access denied page.
 
 ## Production Checklist
 

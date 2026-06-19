@@ -1,75 +1,259 @@
 # Orbi
 
-Aplicacion ASP.NET Core MVC para delivery multi-servicio: tiendas, productos, pedidos, pagos, repartidores y resenas.
+ASP.NET Core MVC delivery platform for restaurants, pharmacies, supermarkets, orders, payments, drivers and reviews.
 
 ## Stack
 
-| Componente | Uso |
+| Component | Use |
 | --- | --- |
-| ASP.NET Core MVC | Web app Razor/MVC |
-| Entity Framework Core | Acceso a datos y migraciones |
-| PostgreSQL | Base de datos |
-| ASP.NET Identity | Usuarios, roles y sesiones |
-| Bootstrap | UI base |
+| ASP.NET Core MVC | Razor/MVC web application |
+| Entity Framework Core | Data access and migrations |
+| PostgreSQL | Database |
+| ASP.NET Identity | Users, roles and sessions |
+| Bootstrap | Base UI |
 
-## Inicio
+## Run
 
 ```bash
 docker compose up -d
 dotnet run --project src/Orbi.Web
 ```
 
-URL local: `http://localhost:5130`.
+Open `http://localhost:5130`.
 
-La app aplica migraciones pendientes y ejecuta el seed al iniciar.
+The app applies pending migrations and seeds data on startup.
 
-## Roles
+## Entity Relationship
 
-Los roles vienen de `docs/ROLS.MD` y se aplican como roles de ASP.NET Identity:
+```mermaid
+erDiagram
+    Customer ||--o{ Address : has
+    Customer ||--o{ Order : places
+    Customer ||--o{ Review : writes
+    StoreCategory ||--o{ Store : categorizes
+    Store ||--o{ Product : offers
+    Store ||--o{ Order : receives
+    Store ||--o{ Review : rated_by
+    Order ||--o{ OrderDetail : contains
+    Product ||--o{ OrderDetail : listed_in
+    OrderStatus ||--o{ Order : tracks
+    DeliveryDriver ||--o{ Order : delivers
+    PaymentMethod ||--o{ Payment : used_in
+    Order ||--o| Payment : pays
 
-| Rol | Acceso principal |
+    Customer {
+        int Id PK
+        string UserId FK
+        string FirstName
+        string LastName
+        string Email UK
+        string Phone
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Address {
+        int Id PK
+        int CustomerId FK
+        string Street
+        string City
+        string State
+        string ZipCode
+        string Country
+        double Latitude
+        double Longitude
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    StoreCategory {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Store {
+        int Id PK
+        string UserId FK
+        int CategoryId FK
+        string Name
+        string Description
+        string Phone
+        string Email
+        string Address
+        double Latitude
+        double Longitude
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Product {
+        int Id PK
+        int StoreId FK
+        string Name
+        string Description
+        decimal Price
+        int Stock
+        string ImageUrl
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Order {
+        int Id PK
+        int CustomerId FK
+        int StoreId FK
+        int DeliveryDriverId FK
+        int OrderStatusId FK
+        int AddressId FK
+        decimal TotalAmount
+        datetime OrderDate
+        datetime DeliveryDate
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    OrderDetail {
+        int Id PK
+        int OrderId FK
+        int ProductId FK
+        int Quantity
+        decimal UnitPrice
+        decimal Subtotal
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    OrderStatus {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    DeliveryDriver {
+        int Id PK
+        string UserId FK
+        string FirstName
+        string LastName
+        string Email UK
+        string Phone
+        double CurrentLatitude
+        double CurrentLongitude
+        datetime LastLocationUpdate
+        bool IsAvailable
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    PaymentMethod {
+        int Id PK
+        string Name UK
+        string Description
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Payment {
+        int Id PK
+        int OrderId FK
+        int PaymentMethodId FK
+        decimal Amount
+        datetime PaymentDate
+        string TransactionId
+        string Status
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+    Review {
+        int Id PK
+        int CustomerId FK
+        int StoreId FK
+        int Rating
+        string Comment
+        bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+```
+
+## Role Access
+
+Navigation stays visible for authenticated users. Forbidden sections return `403` and show the access denied page.
+
+```mermaid
+flowchart LR
+    Admin[Admin] --> All[All business modules]
+
+    StoreOwner[StoreOwner] --> SOStore[Own store]
+    StoreOwner --> SOProducts[Own store products]
+    StoreOwner --> SOOrders[Own store orders]
+    StoreOwner --> SOPayments[Own store payments]
+    StoreOwner --> SOReviews[Own store reviews]
+    StoreOwner --> ReadCatalog[Read catalog modules]
+
+    DeliveryDriver[DeliveryDriver] --> DriverProfile[Own driver profile]
+    DeliveryDriver --> AssignedOrders[Assigned orders]
+    DeliveryDriver --> DeliveryAddress[Assigned order addresses]
+    DeliveryDriver --> DriverReadCatalog[Read stores and products]
+
+    Customer[Customer] --> CustomerProfile[Own customer profile]
+    Customer --> CustomerAddresses[Own addresses]
+    Customer --> CustomerOrders[Own orders]
+    Customer --> CustomerPayments[Own payments]
+    Customer --> CustomerReviews[Own reviews]
+    Customer --> CustomerReadCatalog[Read stores, products and payment methods]
+```
+
+| Role | Main access |
 | --- | --- |
-| `Admin` | CRUD total sobre entidades de negocio. |
-| `StoreOwner` | Su tienda, productos, pedidos, pagos y resenas de su tienda. |
-| `DeliveryDriver` | Su perfil y pedidos asignados. |
-| `Customer` | Su perfil, direcciones, pedidos, pagos y resenas. |
+| `Admin` | Full CRUD on business entities. |
+| `StoreOwner` | Own store, products, orders, payments and reviews. |
+| `DeliveryDriver` | Own profile and assigned orders. |
+| `Customer` | Own profile, addresses, orders, payments and reviews. |
 
-La navegacion no oculta secciones por rol. Si un usuario entra a una seccion no permitida, recibe `403` y la pantalla indica `Acceso prohibido`.
+## Applied Security
 
-## Seguridad Aplicada
+- Global MVC role gate for business controllers.
+- Service-level ownership filters through `UserId`.
+- Server-side validation against guessed IDs.
+- Forbidden service access converted to `403`.
+- Login lockout after failed attempts.
+- Public registration limited to `Customer`, `DeliveryDriver` and `StoreOwner`.
+- `HttpOnly`, `SameSite=Strict` cookies, with secure cookies in production.
+- Security headers: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
+- HSTS outside development and HTTPS redirection.
+- Home chart cache avoids re-rendering when counts have not changed.
 
-- Filtro global de acceso por rol para controladores MVC de negocio.
-- Filtros de propiedad por `UserId` en servicios sensibles.
-- Validacion server-side para impedir acceso por IDs adivinados.
-- Excepciones de acceso convertidas a `403`.
-- Login con bloqueo por intentos fallidos.
-- Registro publico limitado a `Customer`, `DeliveryDriver` y `StoreOwner`.
-- Cookies `HttpOnly`, `SameSite=Strict` y `Secure` en produccion.
-- Headers de seguridad: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y `Permissions-Policy`.
-- HSTS fuera de desarrollo y redireccion HTTPS.
-- Cache JS del grafico del home para no re-renderizar si los conteos no cambiaron.
+## Applied Optimizations
 
-## Optimizaciones Aplicadas
+- Server-side pagination with `Skip` and `Take`.
+- Compact pagination UI with first, previous, page selector, next and last controls.
+- ViewModel projections in services.
+- `AsNoTracking` on read queries.
+- Composite indexes for common filters.
+- Trigram GIN indexes for text search.
+- Large dropdown queries capped at 200 records.
+- In-memory cache for small reference catalogs.
 
-- Paginacion server-side con `Skip`/`Take`.
-- Proyecciones a ViewModels en servicios.
-- `AsNoTracking` en lecturas.
-- Indices compuestos para filtros frecuentes.
-- Indices trigram GIN para busquedas de texto.
-- Dropdowns grandes limitados a 200 registros.
-- Cache en memoria para catalogos pequenos.
+## Pending Work
 
-## Pendiente
+- Automated authorization tests for cross-user data access.
+- Audit logs for sensitive writes.
+- Dedicated cancellation and operational status-change flows.
+- Email confirmation and password recovery.
+- Production security policies for real domains and infrastructure.
 
-- Tests automatizados de acceso por rol y propiedad.
-- Flujos dedicados para cancelar pedidos y cambios operativos de estado.
-- Auditoria de acciones sensibles.
-- Confirmacion de email y recuperacion de contrasena.
-- Politicas de seguridad por ambiente para dominios reales de produccion.
+## Documentation
 
-## Docs
-
-- `docs/API.md`: rutas MVC y permisos.
-- `docs/ROLS.MD`: matriz de roles.
-- `SECURITY.md`: politica y controles de seguridad.
-- `docs/SEED.md`: datos iniciales.
+| File | Description |
+| --- | --- |
+| `docs/API.md` | MVC routes and permissions |
+| `docs/ROLS.MD` | Role matrix and ownership rules |
+| `SECURITY.md` | Security policy and controls |
+| `docs/SEED.md` | Initial data |
+| `docs/ARCHITECTURE.md` | Architecture notes |
