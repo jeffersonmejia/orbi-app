@@ -16,14 +16,14 @@
         <div class="home-total glass" aria-label="Total records" data-reveal>
             <i class="bi bi-database-fill"></i>
             <span>Total records</span>
-            <strong data-total-records>@Model.TotalRecords.ToString("N0", englishCulture)</strong>
+            <strong data-total-records data-current-count="@Model.TotalRecords">@Model.TotalRecords.ToString("N0", englishCulture)</strong>
         </div>
         <div class="home-chart glass" data-reveal>
             @foreach (var item in Model.TableCounts)
             {
                 var height = Model.MaxRecords == 0 ? 0 : Math.Max(8, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
                 <div class="home-chart__row" data-chart-row data-table-name="@item.TableName" style="--bar-height: @height%;">
-                    <span class="home-chart__value" data-record-count>@item.Count.ToString("N0", englishCulture)</span>
+                    <span class="home-chart__value" data-record-count data-current-count="@item.Count">@item.Count.ToString("N0", englishCulture)</span>
                     <div class="home-chart__track" aria-label="@item.TableName: @item.Count records">
                         <div class="home-chart__bar"></div>
                     </div>
@@ -101,7 +101,16 @@
         justify-content: center;
         line-height: 1;
         padding: 0.68rem 1.05rem;
+        transition:
+            background-color 0.35s ease,
+            transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.35s ease;
         white-space: nowrap;
+    }
+
+    .home-total.is-updating {
+        opacity: 0.92;
+        transform: translateY(-1px) scale(1.012);
     }
 
     .home-total i {
@@ -137,6 +146,11 @@
         grid-template-rows: 0.9rem 98px 3.15rem;
         justify-items: center;
         min-width: 0;
+    }
+
+    .home-chart__row.is-updating .home-chart__icon,
+    .home-chart__row.is-updating .home-chart__value {
+        animation: home-soft-pop 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .home-chart__row:nth-child(5n + 2) { --bar-fill: var(--purple-200); }
@@ -206,7 +220,16 @@
         position: absolute;
         transform-origin: bottom;
         animation: bar-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        transition:
+            height 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+            filter 0.42s ease,
+            opacity 0.42s ease;
         width: 100%;
+    }
+
+    .home-chart__row.is-updating .home-chart__bar {
+        filter: saturate(1.16) brightness(1.04);
+        opacity: 0.92;
     }
 
     .home-chart__value {
@@ -232,6 +255,29 @@
         }
         to {
             transform: scaleY(1);
+        }
+    }
+
+    @@keyframes home-soft-pop {
+        0% {
+            opacity: 0.72;
+            transform: translateY(3px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .home-total,
+        .home-chart__bar {
+            transition: none;
+        }
+
+        .home-chart__row.is-updating .home-chart__icon,
+        .home-chart__row.is-updating .home-chart__value {
+            animation: none;
         }
     }
 
@@ -271,8 +317,53 @@
                     const formatter = new Intl.NumberFormat('en-US');
                     const total = document.querySelector('[data-total-records]');
                     const rows = Array.from(document.querySelectorAll('[data-chart-row]'));
+                    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
                     if (!total || rows.length === 0) return;
+
+                    function readCount(element) {
+                        return Number(element.dataset.currentCount || element.textContent.replace(/,/g, '')) || 0;
+                    }
+
+                    function pulse(element) {
+                        const target = element.closest('.home-chart__row') || element.closest('.home-total');
+                        if (!target) return;
+
+                        target.classList.remove('is-updating');
+                        void target.offsetWidth;
+                        target.classList.add('is-updating');
+                        window.setTimeout(() => target.classList.remove('is-updating'), 520);
+                    }
+
+                    function animateCount(element, nextCount) {
+                        const previousCount = readCount(element);
+                        element.dataset.currentCount = nextCount;
+
+                        if (reduceMotion || previousCount === nextCount) {
+                            element.textContent = formatter.format(nextCount);
+                            return false;
+                        }
+
+                        const duration = 560;
+                        const startedAt = performance.now();
+                        const easeOut = (value) => 1 - Math.pow(1 - value, 3);
+
+                        function tick(now) {
+                            const progress = Math.min((now - startedAt) / duration, 1);
+                            const current = Math.round(previousCount + (nextCount - previousCount) * easeOut(progress));
+                            element.textContent = formatter.format(current);
+
+                            if (progress < 1) {
+                                window.requestAnimationFrame(tick);
+                                return;
+                            }
+
+                            element.textContent = formatter.format(nextCount);
+                        }
+
+                        window.requestAnimationFrame(tick);
+                        return true;
+                    }
 
                     try {
                         const response = await fetch(endpoint, {
@@ -286,7 +377,10 @@
                         const maxRecords = data.maxRecords || 0;
                         const counts = new Map(data.tableCounts.map(item => [item.tableName, item.count]));
 
-                        total.textContent = formatter.format(data.totalRecords || 0);
+                        const nextTotal = data.totalRecords || 0;
+                        if (animateCount(total, nextTotal)) {
+                            pulse(total);
+                        }
 
                         rows.forEach((row) => {
                             const tableName = row.dataset.tableName;
@@ -295,7 +389,13 @@
 
                             const height = maxRecords === 0 ? 0 : Math.max(8, Math.round(count * 100 / maxRecords));
                             row.style.setProperty('--bar-height', `${height}%`);
-                            row.querySelector('[data-record-count]').textContent = formatter.format(count);
+                            const countElement = row.querySelector('[data-record-count]');
+
+                            if (countElement) {
+                                if (animateCount(countElement, count)) {
+                                    pulse(countElement);
+                                }
+                            }
                         });
                     } catch {
                         // Keep the last rendered values if the refresh fails.
