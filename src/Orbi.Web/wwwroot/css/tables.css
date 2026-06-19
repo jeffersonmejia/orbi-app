@@ -23,6 +23,121 @@
 .table tbody tr:last-child td { border-bottom: none; }
 .table tbody tr:hover { background: rgba(255,255,255,0.25); }
 
+.badge,
+.crud-chip {
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0.34rem 0.55rem;
+}
+
+.modal-frame-page {
+  background: transparent;
+  display: block;
+  min-height: auto;
+  padding: 0;
+}
+
+.modal-frame-container {
+  max-width: none;
+  padding: 0.2rem;
+}
+
+.modal-frame-container .card {
+  border: 0;
+  box-shadow: none;
+}
+
+.modal-frame-container .d-flex.align-items-center.gap-2.mb-3,
+.modal-frame-container hr {
+  display: none !important;
+}
+
+.modal-frame-container .card-body dl {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+}
+
+.modal-frame-container .card-body dt,
+.modal-frame-container .card-body dd {
+  margin: 0;
+  width: auto;
+}
+
+.modal-frame-container .card-body dt {
+  color: #8a8498;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.modal-frame-container .card-body dd {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: var(--radius-sm);
+  color: #4d485b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  padding: 0.52rem 0.65rem;
+}
+
+.modal-frame-container .card-footer,
+.modal-frame-container main > .d-flex {
+  border-top-color: rgba(196, 181, 253, 0.34);
+}
+
+.crud-record-modal .modal-content {
+  background: var(--glass-sheen), rgba(255, 255, 255, 0.84);
+  background-blend-mode: screen, normal;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.crud-record-modal .modal-header {
+  border-bottom: 1px solid rgba(196, 181, 253, 0.38);
+  padding: 0.85rem 1rem;
+}
+
+.crud-record-modal .modal-title {
+  align-items: center;
+  color: #5f5b6b;
+  display: flex;
+  font-size: 0.95rem;
+  font-weight: 700;
+  gap: 0.45rem;
+}
+
+.crud-record-modal .modal-body {
+  height: min(76vh, 760px);
+  padding: 0;
+}
+
+.crud-record-modal iframe {
+  border: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .crud-record-modal .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .crud-record-modal .modal-body {
+    height: 82vh;
+  }
+
+  .modal-frame-container .card-body dl {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ─── Pagination ─── */
 .pagination {
   display: flex;
@@ -64,8 +179,11 @@
   border-radius: var(--radius-pill);
   font-size: 0.82rem;
   font-weight: 600;
-  height: 36px;
-  min-width: 150px;
+  height: 44px;
+  line-height: 1.25;
+  min-width: 190px;
+  padding-bottom: 0.55rem;
+  padding-top: 0.55rem;
   width: auto;
 }
 

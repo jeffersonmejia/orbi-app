@@ -18,7 +18,7 @@
         }
 
         var thousands = count / 1000.0;
-        var format = count < 10000 && count % 1000 != 0 ? "0.#" : "N0";
+        var format = count % 1000 == 0 ? "N0" : "0.#";
         return $"{thousands.ToString(format, englishCulture)} mil";
     }
 }

@@ -25,8 +25,9 @@
 </head>
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var isModalFrame = Context.Request.Query["modal"] == "1";
 }
-<body class="@(currentController == "Home" ? "home-page" : "")">
+<body class="@(currentController == "Home" ? "home-page" : "") @(isModalFrame ? "modal-frame-page" : "")">
     @{
         var isSignedIn = SignInManager.IsSignedIn(User);
         var isAdmin = User.IsInRole("Admin");
@@ -88,6 +89,8 @@
                         ? "Customer"
                         : "User";
     }
+    @if (!isModalFrame)
+    {
     <nav class="island-nav">
         @if (isSignedIn)
         {
@@ -235,8 +238,9 @@
             </a>
         }
     </nav>
+    }
 
-    <div class="container">
+    <div class="container @(isModalFrame ? "modal-frame-container" : "")">
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -258,9 +262,32 @@
         </main>
     </div>
 
-    <footer class="footer">
-        &copy; 2026 Orbi Platform &mdash; All rights reserved.
-    </footer>
+    @if (!isModalFrame)
+    {
+        <footer class="footer">
+            &copy; 2026 Orbi Platform &mdash; All rights reserved.
+        </footer>
+    }
+
+    @if (!isModalFrame)
+    {
+        <div class="modal fade crud-record-modal" id="crudRecordModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-eye-fill" data-crud-record-modal-icon></i>
+                            <span data-crud-record-modal-title>Record details</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <iframe title="Record" data-crud-record-frame></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

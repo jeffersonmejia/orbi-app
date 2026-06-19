@@ -1,5 +1,19 @@
 ﻿// Global UI helpers.
 document.addEventListener('DOMContentLoaded', () => {
+  if (document.body.classList.contains('modal-frame-page')) {
+    document.querySelectorAll('form[action*="/Edit"]').forEach(form => {
+      const action = new URL(form.action, window.location.origin);
+      action.searchParams.set('modal', '1');
+      form.action = action.toString();
+    });
+
+    document.querySelectorAll('a[href*="/Details/"], a[href*="/Edit/"]').forEach(link => {
+      const href = new URL(link.href, window.location.origin);
+      href.searchParams.set('modal', '1');
+      link.href = href.toString();
+    });
+  }
+
   const skeletonWraps = document.querySelectorAll('.skeleton-wrap');
 
   if (skeletonWraps.length) {
@@ -57,4 +71,79 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  const recordModalElement = document.getElementById('crudRecordModal');
+  const recordFrame = recordModalElement?.querySelector('[data-crud-record-frame]');
+  const recordTitle = recordModalElement?.querySelector('[data-crud-record-modal-title]');
+  const recordIcon = recordModalElement?.querySelector('[data-crud-record-modal-icon]');
+  const recordModal = recordModalElement && window.bootstrap
+    ? new window.bootstrap.Modal(recordModalElement)
+    : null;
+
+  if (recordModal && recordFrame) {
+    let firstFrameLoad = true;
+    let activeMode = 'details';
+
+    document.querySelectorAll('a[href*="/Details/"], a[href*="/Edit/"]').forEach(link => {
+      link.addEventListener('click', event => {
+        const recordUrl = new URL(link.href, window.location.origin);
+        activeMode = recordUrl.pathname.includes('/Edit/') ? 'edit' : 'details';
+        recordUrl.searchParams.set('modal', '1');
+
+        event.preventDefault();
+        firstFrameLoad = true;
+        recordFrame.src = recordUrl.toString();
+
+        if (recordTitle) {
+          recordTitle.textContent = activeMode === 'edit' ? 'Edit record' : 'Record details';
+        }
+
+        if (recordIcon) {
+          recordIcon.className = activeMode === 'edit' ? 'bi bi-pencil-square' : 'bi bi-eye-fill';
+        }
+
+        recordModal.show();
+      });
+    });
+
+    recordFrame.addEventListener('load', () => {
+      if (firstFrameLoad) {
+        firstFrameLoad = false;
+        return;
+      }
+
+      let framePath = '';
+      try {
+        framePath = recordFrame.contentWindow.location.pathname;
+      } catch {
+        window.location.reload();
+        return;
+      }
+
+      if (framePath.includes('/Edit/') && activeMode !== 'edit') {
+        activeMode = 'edit';
+
+        if (recordTitle) {
+          recordTitle.textContent = 'Edit record';
+        }
+
+        if (recordIcon) {
+          recordIcon.className = 'bi bi-pencil-square';
+        }
+
+        return;
+      }
+
+      if (activeMode !== 'edit') return;
+
+      if (!framePath.includes('/Edit/')) {
+        window.location.reload();
+      }
+    });
+
+    recordModalElement.addEventListener('hidden.bs.modal', () => {
+      firstFrameLoad = true;
+      recordFrame.removeAttribute('src');
+    });
+  }
 });
