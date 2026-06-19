@@ -71,7 +71,61 @@ flowchart TB
 
 Orbi follows a classic MVC structure. Controllers receive requests and coordinate validation, authorization and service calls. Services build scoped `IQueryable` queries, apply pagination/search rules and project entities into view models. `CurrentUserAccess` adds ownership limits for roles such as `Customer`, `StoreOwner` and `DeliveryDriver`, while ASP.NET Identity stores users and roles in the same PostgreSQL database.
 
-## 5. Database Schema
+## 5. Role and Business Flow
+
+```mermaid
+flowchart LR
+    subgraph People[User roles]
+        Admin[Admin]
+        Owner[StoreOwner]
+        Driver[DeliveryDriver]
+        Customer[Customer]
+    end
+
+    subgraph Access[Access and ownership rules]
+        Login[Sign in]
+        Roles[RoleAccessFilter]
+        Scope[CurrentUserAccess data scope]
+    end
+
+    subgraph Business[Business capabilities]
+        Catalog[Catalog management]
+        Orders[Order lifecycle]
+        Delivery[Delivery assignment and status]
+        Payments[Payments and payment methods]
+        Reviews[Reviews and customer feedback]
+        Directory[Customers addresses and drivers]
+    end
+
+    subgraph Data[Shared operational data]
+        Db[(PostgreSQL OrbiDb)]
+    end
+
+    Admin --> Login
+    Owner --> Login
+    Driver --> Login
+    Customer --> Login
+    Login --> Roles
+    Roles --> Scope
+
+    Scope --> Catalog
+    Scope --> Orders
+    Scope --> Delivery
+    Scope --> Payments
+    Scope --> Reviews
+    Scope --> Directory
+
+    Catalog --> Db
+    Orders --> Db
+    Delivery --> Db
+    Payments --> Db
+    Reviews --> Db
+    Directory --> Db
+```
+
+This view is intended for non-technical readers. Every user signs in through the same application, but their role decides which business areas they can open. After that, ownership rules decide which records they can see or change: admins work across the platform, store owners work on their own store data, delivery drivers work on assigned deliveries, and customers work on their own orders, addresses, payments and reviews.
+
+## 6. Database Schema
 
 ```mermaid
 erDiagram
