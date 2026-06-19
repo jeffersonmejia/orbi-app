@@ -82,6 +82,7 @@
 
 .auth-divider {
   flex: 0 0 auto;
+  background: var(--glass-sheen), rgba(196,181,253,0.5);
 }
 
 /* ─── Desktop sidebar (> 900px) ─── */
@@ -143,7 +144,11 @@
   .aside-divider {
     width: auto !important;
     height: 1px !important;
-    margin: 0.6rem 0.75rem 0.45rem !important;
+    margin: 0.75rem 0.55rem 0.65rem !important;
+  }
+
+  .auth-divider {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.45);
   }
 }
 
