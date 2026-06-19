@@ -41,31 +41,52 @@ The app applies pending EF Core migrations on startup. The seed container waits 
 
 ## 4. Role and Business Flow
 
-```mermaid
-graph TD;
-    Login[Sign in]-->Gate[Role access filter];
-    Gate-->Scope[Ownership rules];
-    Scope-->Admin[Admin];
-    Scope-->StoreOwner[StoreOwner];
-    Scope-->DeliveryDriver[DeliveryDriver];
-    Scope-->Customer[Customer];
-    Admin-->AdminHome[Home read];
-    Admin-->AdminCatalog[Catalog full CRUD];
-    Admin-->AdminOrders[Orders full CRUD];
-    Admin-->AdminDirectory[Directory full CRUD];
-    StoreOwner-->OwnerHome[Home read];
-    StoreOwner-->OwnerCatalog[Own store and products CRUD];
-    StoreOwner-->OwnerOrders[Own orders read and edit];
-    StoreOwner-->OwnerPayments[Own payments read];
-    StoreOwner-->OwnerDrivers[Drivers read only];
-    DeliveryDriver-->DriverHome[Home read];
-    DeliveryDriver-->DriverCatalog[Stores and products read];
-    DeliveryDriver-->DriverOrders[Assigned orders read and edit status];
-    DeliveryDriver-->DriverAddresses[Assigned addresses read];
-    Customer-->CustomerHome[Home read];
-    Customer-->CustomerCatalog[Stores and products read];
-    Customer-->CustomerOrders[Own orders read and create];
-    Customer-->CustomerProfile[Profile and own data];
+Every user signs in through the same application. The role access filter decides which pages are visible, and ownership rules limit the records each role can read or change.
+
+### Admin
+
+```text
+Sign in
+  -> Role access filter
+  -> Admin
+      -> Home: read
+      -> Catalog: full CRUD for products, categories, stores and reviews
+      -> Orders: full CRUD for orders, statuses, payments and payment methods
+      -> Directory: full CRUD for customers, addresses and drivers
 ```
 
-This view is intended for non-technical readers. Every user signs in through the same application, the role access filter decides which pages are visible, and ownership rules limit the records each role can read or change.
+### StoreOwner
+
+```text
+Sign in
+  -> Role access filter
+  -> StoreOwner
+      -> Home: read
+      -> Catalog: own store and products CRUD, reviews read, categories read
+      -> Orders: own store orders read and edit, payments read, statuses read
+      -> Directory: drivers read only
+```
+
+### DeliveryDriver
+
+```text
+Sign in
+  -> Role access filter
+  -> DeliveryDriver
+      -> Home: read
+      -> Catalog: stores and products read
+      -> Orders: assigned orders read and edit status, statuses read
+      -> Directory: own driver profile and assigned addresses read
+```
+
+### Customer
+
+```text
+Sign in
+  -> Role access filter
+  -> Customer
+      -> Home: read
+      -> Catalog: stores and products read
+      -> Orders: own orders read and create
+      -> Directory: hidden, profile only
+```
