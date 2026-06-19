@@ -45,9 +45,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
         ? CookieSecurePolicy.SameAsRequest
         : CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddSingleton<ActiveSessionStore>();
 builder.Services.AddScoped<CurrentUserAccess>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();

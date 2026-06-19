@@ -28,7 +28,7 @@ public static class DbSeeder
                     Email = "admin@orbi.com",
                     EmailConfirmed = true
                 };
-                var result = await userManager.CreateAsync(admin, "Admin123!");
+                var result = await userManager.CreateAsync(admin, "Admin1234!");
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(admin, "Admin");
             }

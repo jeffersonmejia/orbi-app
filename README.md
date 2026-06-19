@@ -1,29 +1,45 @@
 # Orbi
 
-ASP.NET Core MVC delivery platform for restaurants, pharmacies, supermarkets, orders, payments, drivers and reviews.
+## 1. Summary
 
-## Stack
+Orbi is an ASP.NET Core MVC delivery platform for restaurants, pharmacies and supermarkets. It manages catalog data, customers, addresses, stores, products, orders, delivery drivers, payments and reviews with ASP.NET Identity roles.
 
-| Component | Use |
-| --- | --- |
-| ASP.NET Core MVC | Razor/MVC web application |
-| Entity Framework Core | Data access and migrations |
-| PostgreSQL | Database |
-| ASP.NET Identity | Users, roles and sessions |
-| Bootstrap | Base UI |
+## 2. Technologies
 
-## Run
+| Technology | Exact version | Source |
+| --- | --- | --- |
+| .NET SDK | 10.0.300 | Local SDK |
+| Target framework | net10.0 | `src/Orbi.Web/Orbi.Web.csproj` |
+| ASP.NET Core MVC | 10.0 | Target framework |
+| ASP.NET Identity EF Core | 10.0.2 | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` |
+| Entity Framework Core Design | 10.0.9 | `Microsoft.EntityFrameworkCore.Design` |
+| Entity Framework Core Tools | 10.0.9 | `Microsoft.EntityFrameworkCore.Tools` |
+| Npgsql EF Core provider | 10.0.2 | `Npgsql.EntityFrameworkCore.PostgreSQL` |
+| Visual Studio Web Code Generation | 10.0.2 | `Microsoft.VisualStudio.Web.CodeGeneration.Design` |
+| PostgreSQL Docker image | postgres:16-alpine | `docker-compose.yml` |
+| Seed Docker image | postgres:16-alpine | `docker-compose.yml` |
+| Docker Engine | 26.1.5+dfsg1 | Local Docker CLI |
+| Docker Compose | 2.26.1-4 | Local Docker Compose plugin |
+| Bootstrap | 5.3.3 | `wwwroot/lib/bootstrap` |
+| Bootstrap Icons | 1.11.3 | CDN in `_Layout.cshtml` |
+| jQuery | 3.7.1 | `wwwroot/lib/jquery` |
+| jQuery Validation | 1.21.0 | `wwwroot/lib/jquery-validation` |
+| jQuery Validation Unobtrusive | 4.0.0 | `wwwroot/lib/jquery-validation-unobtrusive` |
+
+## 3. Installation
 
 ```bash
+git clone git@github.com:jeffersonmejia/orbi-app.git
+cd orbi-app
 docker compose up -d
 dotnet run --project src/Orbi.Web
 ```
 
 Open `http://localhost:5130`.
 
-The app applies pending migrations and seeds data on startup.
+The app applies pending EF Core migrations on startup. The seed container waits for the EF Core schema and then loads the SQL files in `db/`.
 
-## Entity Relationship
+## 4. Database Schema
 
 ```mermaid
 erDiagram
@@ -180,80 +196,3 @@ erDiagram
         datetime UpdatedAt
     }
 ```
-
-## Role Access
-
-Navigation stays visible for authenticated users. Forbidden sections return `403` and show the access denied page.
-
-```mermaid
-flowchart LR
-    Admin[Admin] --> All[All business modules]
-
-    StoreOwner[StoreOwner] --> SOStore[Own store]
-    StoreOwner --> SOProducts[Own store products]
-    StoreOwner --> SOOrders[Own store orders]
-    StoreOwner --> SOPayments[Own store payments]
-    StoreOwner --> SOReviews[Own store reviews]
-    StoreOwner --> ReadCatalog[Read catalog modules]
-
-    DeliveryDriver[DeliveryDriver] --> DriverProfile[Own driver profile]
-    DeliveryDriver --> AssignedOrders[Assigned orders]
-    DeliveryDriver --> DeliveryAddress[Assigned order addresses]
-    DeliveryDriver --> DriverReadCatalog[Read stores and products]
-
-    Customer[Customer] --> CustomerProfile[Own customer profile]
-    Customer --> CustomerAddresses[Own addresses]
-    Customer --> CustomerOrders[Own orders]
-    Customer --> CustomerPayments[Own payments]
-    Customer --> CustomerReviews[Own reviews]
-    Customer --> CustomerReadCatalog[Read stores, products and payment methods]
-```
-
-| Role | Main access |
-| --- | --- |
-| `Admin` | Full CRUD on business entities. |
-| `StoreOwner` | Own store, products, orders, payments and reviews. |
-| `DeliveryDriver` | Own profile and assigned orders. |
-| `Customer` | Own profile, addresses, orders, payments and reviews. |
-
-## Applied Security
-
-- Global MVC role gate for business controllers.
-- Service-level ownership filters through `UserId`.
-- Server-side validation against guessed IDs.
-- Forbidden service access converted to `403`.
-- Login lockout after failed attempts.
-- Public registration limited to `Customer`, `DeliveryDriver` and `StoreOwner`.
-- `HttpOnly`, `SameSite=Strict` cookies, with secure cookies in production.
-- Security headers: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
-- HSTS outside development and HTTPS redirection.
-- Home chart cache avoids re-rendering when counts have not changed.
-
-## Applied Optimizations
-
-- Server-side pagination with `Skip` and `Take`.
-- Compact pagination UI with first, previous, page selector, next and last controls.
-- ViewModel projections in services.
-- `AsNoTracking` on read queries.
-- Composite indexes for common filters.
-- Trigram GIN indexes for text search.
-- Large dropdown queries capped at 200 records.
-- In-memory cache for small reference catalogs.
-
-## Pending Work
-
-- Automated authorization tests for cross-user data access.
-- Audit logs for sensitive writes.
-- Dedicated cancellation and operational status-change flows.
-- Email confirmation and password recovery.
-- Production security policies for real domains and infrastructure.
-
-## Documentation
-
-| File | Description |
-| --- | --- |
-| `docs/API.md` | MVC routes and permissions |
-| `docs/ROLS.MD` | Role matrix and ownership rules |
-| `SECURITY.md` | Security policy and controls |
-| `docs/SEED.md` | Initial data |
-| `docs/ARCHITECTURE.md` | Architecture notes |

@@ -25,92 +25,178 @@
 }
 <body class="@(currentController == "Home" ? "home-page" : "")">
     @{
+        var isSignedIn = SignInManager.IsSignedIn(User);
+        var isAdmin = User.IsInRole("Admin");
+        var isStoreOwner = User.IsInRole("StoreOwner");
+        var isDeliveryDriver = User.IsInRole("DeliveryDriver");
+        var isCustomer = User.IsInRole("Customer");
+
+        var canProducts = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
+        var canStoreCategories = isSignedIn;
+        var canStores = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
+        var canReviews = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
+        var canCatalog = canProducts || canStoreCategories || canStores || canReviews;
+
+        var canOrders = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver || isCustomer);
+        var canOrderStatuses = isSignedIn;
+        var canPayments = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
+        var canPaymentMethods = isSignedIn && (isAdmin || isStoreOwner || isCustomer);
+        var canOrdersGroup = canOrders || canOrderStatuses || canPayments || canPaymentMethods;
+
+        var canCustomers = isSignedIn && (isAdmin || isCustomer);
+        var canAddresses = isSignedIn && (isAdmin || isDeliveryDriver || isCustomer);
+        var canDeliveryDrivers = isSignedIn && (isAdmin || isStoreOwner || isDeliveryDriver);
+        var canDirectory = canCustomers || canAddresses || canDeliveryDrivers;
+
         var isCatalog = currentController is "Products" or "StoreCategories" or "Stores" or "Reviews";
         var isOrders = currentController is "Orders" or "OrderStatuses" or "Payments" or "PaymentMethods";
         var isDirectory = currentController is "Customers" or "Addresses" or "DeliveryDrivers";
+
+        var identityName = string.IsNullOrWhiteSpace(User.Identity?.Name)
+            ? "User"
+            : User.Identity.Name;
+        var firstName = identityName.Split('@', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "User";
+        firstName = firstName.Split('.', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? firstName;
+        firstName = string.IsNullOrWhiteSpace(firstName)
+            ? "User"
+            : char.ToUpperInvariant(firstName[0]) + firstName[1..];
+        var roleName = isAdmin
+            ? "Admin"
+            : isStoreOwner
+                ? "StoreOwner"
+                : isDeliveryDriver
+                    ? "DeliveryDriver"
+                    : isCustomer
+                        ? "Customer"
+                        : "User";
     }
     <nav class="island-nav">
-        <a class="island-link @(currentController == "Home" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
-            <i class="bi bi-house-fill"></i>
-            Home
-        </a>
-        <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isCatalog ? "active" : "")" type="button">
-                <i class="bi bi-box-seam-fill"></i>
-                Catalog
-                <i class="bi bi-chevron-down drop-chevron"></i>
-            </button>
-            <div class="dropdown-menu">
-                <a class="island-link @(currentController == "Products" ? "active" : "")" asp-controller="Products" asp-action="Index">
-                    <i class="bi bi-box-seam-fill"></i>
-                    Products
-                </a>
-                <a class="island-link @(currentController == "StoreCategories" ? "active" : "")" asp-controller="StoreCategories" asp-action="Index">
-                    <i class="bi bi-tags-fill"></i>
-                    Categories
-                </a>
-                <a class="island-link @(currentController == "Stores" ? "active" : "")" asp-controller="Stores" asp-action="Index">
-                    <i class="bi bi-shop"></i>
-                    Stores
-                </a>
-                <a class="island-link @(currentController == "Reviews" ? "active" : "")" asp-controller="Reviews" asp-action="Index">
-                    <i class="bi bi-chat-square-text-fill"></i>
-                    Reviews
-                </a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isOrders ? "active" : "")" type="button">
-                <i class="bi bi-bag-fill"></i>
-                Orders
-                <i class="bi bi-chevron-down drop-chevron"></i>
-            </button>
-            <div class="dropdown-menu">
-                <a class="island-link @(currentController == "Orders" ? "active" : "")" asp-controller="Orders" asp-action="Index">
-                    <i class="bi bi-bag-fill"></i>
-                    Orders
-                </a>
-                <a class="island-link @(currentController == "OrderStatuses" ? "active" : "")" asp-controller="OrderStatuses" asp-action="Index">
-                    <i class="bi bi-signpost-2-fill"></i>
-                    Statuses
-                </a>
-                <a class="island-link @(currentController == "Payments" ? "active" : "")" asp-controller="Payments" asp-action="Index">
-                    <i class="bi bi-cash-stack"></i>
-                    Payments
-                </a>
-                <a class="island-link @(currentController == "PaymentMethods" ? "active" : "")" asp-controller="PaymentMethods" asp-action="Index">
-                    <i class="bi bi-credit-card-2-front-fill"></i>
-                    Pay Methods
-                </a>
-            </div>
-        </div>
-        <div class="nav-dropdown">
-            <button class="island-link dropdown-toggle @(isDirectory ? "active" : "")" type="button">
-                <i class="bi bi-people-fill"></i>
-                Directory
-                <i class="bi bi-chevron-down drop-chevron"></i>
-            </button>
-            <div class="dropdown-menu">
-                <a class="island-link @(currentController == "Customers" ? "active" : "")" asp-controller="Customers" asp-action="Index">
-                    <i class="bi bi-people-fill"></i>
-                    Customers
-                </a>
-                <a class="island-link @(currentController == "Addresses" ? "active" : "")" asp-controller="Addresses" asp-action="Index">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    Addresses
-                </a>
-                <a class="island-link @(currentController == "DeliveryDrivers" ? "active" : "")" asp-controller="DeliveryDrivers" asp-action="Index">
-                    <i class="bi bi-truck"></i>
-                    Drivers
-                </a>
-            </div>
-        </div>
-        <div class="aside-divider auth-divider" aria-hidden="true"></div>
-        @if (SignInManager.IsSignedIn(User))
+        @if (isSignedIn)
         {
+            <a class="island-link @(currentController == "Home" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-house-fill"></i>
+                Home
+            </a>
+            @if (canCatalog)
+            {
+                <div class="nav-dropdown">
+                    <button class="island-link dropdown-toggle @(isCatalog ? "active" : "")" type="button">
+                        <i class="bi bi-box-seam-fill"></i>
+                        Catalog
+                        <i class="bi bi-chevron-down drop-chevron"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        @if (canProducts)
+                        {
+                            <a class="island-link @(currentController == "Products" ? "active" : "")" asp-controller="Products" asp-action="Index">
+                                <i class="bi bi-box-seam-fill"></i>
+                                Products
+                            </a>
+                        }
+                        @if (canStoreCategories)
+                        {
+                            <a class="island-link @(currentController == "StoreCategories" ? "active" : "")" asp-controller="StoreCategories" asp-action="Index">
+                                <i class="bi bi-tags-fill"></i>
+                                Categories
+                            </a>
+                        }
+                        @if (canStores)
+                        {
+                            <a class="island-link @(currentController == "Stores" ? "active" : "")" asp-controller="Stores" asp-action="Index">
+                                <i class="bi bi-shop"></i>
+                                Stores
+                            </a>
+                        }
+                        @if (canReviews)
+                        {
+                            <a class="island-link @(currentController == "Reviews" ? "active" : "")" asp-controller="Reviews" asp-action="Index">
+                                <i class="bi bi-chat-square-text-fill"></i>
+                                Reviews
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            @if (canOrdersGroup)
+            {
+                <div class="nav-dropdown">
+                    <button class="island-link dropdown-toggle @(isOrders ? "active" : "")" type="button">
+                        <i class="bi bi-bag-fill"></i>
+                        Orders
+                        <i class="bi bi-chevron-down drop-chevron"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        @if (canOrders)
+                        {
+                            <a class="island-link @(currentController == "Orders" ? "active" : "")" asp-controller="Orders" asp-action="Index">
+                                <i class="bi bi-bag-fill"></i>
+                                Orders
+                            </a>
+                        }
+                        @if (canOrderStatuses)
+                        {
+                            <a class="island-link @(currentController == "OrderStatuses" ? "active" : "")" asp-controller="OrderStatuses" asp-action="Index">
+                                <i class="bi bi-signpost-2-fill"></i>
+                                Statuses
+                            </a>
+                        }
+                        @if (canPayments)
+                        {
+                            <a class="island-link @(currentController == "Payments" ? "active" : "")" asp-controller="Payments" asp-action="Index">
+                                <i class="bi bi-cash-stack"></i>
+                                Payments
+                            </a>
+                        }
+                        @if (canPaymentMethods)
+                        {
+                            <a class="island-link @(currentController == "PaymentMethods" ? "active" : "")" asp-controller="PaymentMethods" asp-action="Index">
+                                <i class="bi bi-credit-card-2-front-fill"></i>
+                                Pay Methods
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            @if (canDirectory)
+            {
+                <div class="nav-dropdown">
+                    <button class="island-link dropdown-toggle @(isDirectory ? "active" : "")" type="button">
+                        <i class="bi bi-people-fill"></i>
+                        Directory
+                        <i class="bi bi-chevron-down drop-chevron"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        @if (canCustomers)
+                        {
+                            <a class="island-link @(currentController == "Customers" ? "active" : "")" asp-controller="Customers" asp-action="Index">
+                                <i class="bi bi-people-fill"></i>
+                                Customers
+                            </a>
+                        }
+                        @if (canAddresses)
+                        {
+                            <a class="island-link @(currentController == "Addresses" ? "active" : "")" asp-controller="Addresses" asp-action="Index">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                Addresses
+                            </a>
+                        }
+                        @if (canDeliveryDrivers)
+                        {
+                            <a class="island-link @(currentController == "DeliveryDrivers" ? "active" : "")" asp-controller="DeliveryDrivers" asp-action="Index">
+                                <i class="bi bi-truck"></i>
+                                Drivers
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            <div class="aside-divider auth-divider" aria-hidden="true"></div>
             <span class="island-link island-link--static">
                 <i class="bi bi-person-circle"></i>
-                @User.Identity!.Name
+                <span class="aside-user">
+                    <span class="aside-user__name">@firstName</span>
+                    <span class="aside-user__role">@roleName</span>
+                </span>
             </span>
             <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                 <button type="submit" class="island-link island-link--btn">
@@ -138,6 +224,14 @@
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle-fill me-1"></i>
                 @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                @TempData["Error"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button>
             </div>
         }

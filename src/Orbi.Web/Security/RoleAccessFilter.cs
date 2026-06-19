@@ -67,7 +67,8 @@ public class RoleAccessFilter : IAsyncActionFilter
 
             "Customers" => _access.IsCustomer && !isCreate && !isDelete && (isRead || isEdit),
 
-            "Addresses" => _access.IsCustomer && (isRead || isCreate || isEdit || isDelete),
+            "Addresses" => _access.IsCustomer && (isRead || isCreate || isEdit || isDelete) ||
+                _access.IsDeliveryDriver && isRead,
 
             "Orders" => (_access.IsStoreOwner || _access.IsDeliveryDriver) && (isRead || isEdit) ||
                 _access.IsCustomer && (isRead || isCreate),

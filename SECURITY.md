@@ -23,23 +23,30 @@ Do not publish vulnerabilities in public issues.
 
 | Area | Protection |
 | --- | --- |
-| Authentication | ASP.NET Identity with unique email and lockout after failed login attempts |
+| Authentication | ASP.NET Identity with unique email checks, duplicate-registration validation and lockout after failed login attempts |
 | Authorization | Global MVC role filter plus service-level ownership filters |
 | Roles | `Admin`, `StoreOwner`, `DeliveryDriver`, `Customer` |
 | Ownership | Sensitive reads and writes validate `UserId` links |
 | Passwords | Identity password hashing; minimum 10 chars, digit, uppercase and symbol |
-| Sessions | `HttpOnly`, `SameSite=Strict`, secure cookies in production |
+| Sessions | `HttpOnly`, `SameSite=Strict`, secure cookies in production, 8-hour cookie lifetime and one active session per user |
 | CSRF | Antiforgery validation on POST actions |
 | SQL Injection | EF Core parameterized queries |
 | XSS | Razor output encoding plus Content Security Policy |
 | Clickjacking | `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'` |
 | MIME sniffing | `X-Content-Type-Options: nosniff` |
 | Transport | HTTPS redirection and HSTS outside development |
-| Data retention | Soft delete through `IsActive` |
+| Data retention | Business delete actions use logical delete through `IsActive` |
 
 ## Access Behavior
 
-Navigation stays visible for all authenticated roles. If a role opens a forbidden route, the app returns `403` and shows the access denied page.
+Unauthenticated users only see sign-in and sign-up actions. Authenticated users only see sections authorized for their role. If a role opens a forbidden route directly, the app returns `403` and shows the access denied page.
+
+## Session Behavior
+
+- A successful login marks the user as having an active session.
+- A second login attempt with valid credentials is rejected while that session is active.
+- Logout clears the active-session marker.
+- The active-session marker follows the configured 8-hour cookie lifetime.
 
 ## Production Checklist
 

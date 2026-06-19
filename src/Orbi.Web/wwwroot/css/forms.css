@@ -80,3 +80,16 @@ textarea.form-control { resize: vertical; }
   font-size: 0.85rem;
   padding: 0.7rem 0.85rem;
 }
+
+.password-field .form-control {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.password-toggle {
+  align-items: center;
+  border-color: rgba(196, 181, 253, 0.72);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 44px;
+}

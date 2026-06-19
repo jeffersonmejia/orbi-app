@@ -38,4 +38,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (select.value) window.location.href = select.value;
     });
   });
+
+  document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    button.addEventListener('click', () => {
+      const field = button.closest('.password-field');
+      const input = field?.querySelector('[data-password-input]');
+      const icon = button.querySelector('i');
+
+      if (!input) return;
+
+      const shouldShow = input.type === 'password';
+      input.type = shouldShow ? 'text' : 'password';
+      button.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+
+      if (icon) {
+        icon.classList.toggle('bi-eye-fill', !shouldShow);
+        icon.classList.toggle('bi-eye-slash-fill', shouldShow);
+      }
+    });
+  });
 });

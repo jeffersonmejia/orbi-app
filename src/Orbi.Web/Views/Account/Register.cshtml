@@ -53,12 +53,22 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" />
+                        <div class="input-group password-field">
+                            <input asp-for="Password" class="form-control" data-password-input />
+                            <button type="button" class="btn btn-outline-secondary password-toggle" data-password-toggle aria-label="Show password">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ConfirmPassword" class="form-label"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <div class="input-group password-field">
+                            <input asp-for="ConfirmPassword" class="form-control" data-password-input />
+                            <button type="button" class="btn btn-outline-secondary password-toggle" data-password-toggle aria-label="Show password">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
                 </div>
@@ -128,11 +138,16 @@
 </div>
 
 @section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
-        document.getElementById('role-select').addEventListener('change', function () {
-            var role = this.value;
+        const roleSelect = document.getElementById('role-select');
+        const syncRoleFields = () => {
+            var role = roleSelect.value;
             document.getElementById('customer-fields').style.display = role === 'Customer' ? 'block' : 'none';
             document.getElementById('store-fields').style.display = role === 'StoreOwner' ? 'block' : 'none';
-        });
+        };
+
+        roleSelect.addEventListener('change', syncRoleFields);
+        syncRoleFields();
     </script>
 }
