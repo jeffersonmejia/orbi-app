@@ -39,7 +39,39 @@ Open `http://localhost:5130`.
 
 The app applies pending EF Core migrations on startup. The seed container waits for the EF Core schema and then loads the SQL files in `db/`.
 
-## 4. Database Schema
+## 4. Application Architecture
+
+```mermaid
+flowchart TB
+    User[Browser user] -->|HTTP requests| MVC[ASP.NET Core MVC]
+
+    subgraph WebApp[Orbi.Web]
+        MVC --> Controllers[Controllers]
+        Controllers --> RoleFilter[RoleAccessFilter]
+        Controllers --> Services[Entity services]
+        Controllers --> Identity[ASP.NET Identity]
+        Services --> Access[CurrentUserAccess ownership filters]
+        Services --> EF[Entity Framework Core DbContext]
+        Identity --> EF
+        RoleFilter --> Identity
+        Controllers --> Views[Razor views and view models]
+        Views --> User
+    end
+
+    EF -->|Npgsql provider| Postgres[(PostgreSQL OrbiDb)]
+
+    subgraph Startup[Startup and data loading]
+        Migrations[EF Core migrations] --> Postgres
+        Seed[Seed container SQL scripts] --> Postgres
+    end
+
+    Docker[Docker Compose] --> Postgres
+    Docker --> Seed
+```
+
+Orbi follows a classic MVC structure. Controllers receive requests and coordinate validation, authorization and service calls. Services build scoped `IQueryable` queries, apply pagination/search rules and project entities into view models. `CurrentUserAccess` adds ownership limits for roles such as `Customer`, `StoreOwner` and `DeliveryDriver`, while ASP.NET Identity stores users and roles in the same PostgreSQL database.
+
+## 5. Database Schema
 
 ```mermaid
 erDiagram
