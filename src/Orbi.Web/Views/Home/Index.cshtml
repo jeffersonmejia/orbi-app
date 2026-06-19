@@ -1,59 +1,190 @@
-﻿@{
+﻿@model Orbi.Web.ViewModels.HomeDashboardViewModel
+@{
     ViewData["Title"] = "Home";
+    var chartHeight = Math.Max(220, Model.TableCounts.Count * 46);
 }
 
-<div class="text-center py-5">
-    <i class="bi bi-globe2 animate-float" style="font-size: 3rem; color: var(--accent); margin-bottom: 0.5rem;"></i>
-    <h1 class="display-4 fw-bold" data-reveal>Welcome to Orbi</h1>
-    <p class="lead mb-4">
-        Your unified multi-service delivery platform. Restaurants, pharmacies, and supermarkets — all in one orbit.
-    </p>
-    <div class="skeleton-container">
-        <div class="skeleton-wrap">
-            <div class="row justify-content-center g-4">
-                <div class="col-md-4">
-                    <div class="skeleton skeleton-card" style="height: 230px;">
-                        <div class="skeleton-circle"></div>
-                        <div class="skeleton-line-lg" style="width: 50%;"></div>
-                        <div class="skeleton-line-sm" style="width: 70%;"></div>
-                        <div class="skeleton-btn-block" style="width: 55%;"></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="skeleton skeleton-card" style="height: 230px;">
-                        <div class="skeleton-circle"></div>
-                        <div class="skeleton-line-lg" style="width: 50%;"></div>
-                        <div class="skeleton-line-sm" style="width: 70%;"></div>
-                        <div class="skeleton-btn-block" style="width: 55%;"></div>
-                    </div>
-                </div>
-            </div>
+<section class="home-dashboard py-4">
+    <div class="home-dashboard__header" data-reveal>
+        <div>
+            <span class="home-dashboard__eyebrow">
+                <i class="bi bi-bar-chart-fill"></i>
+                Database overview
+            </span>
+            <h1 class="display-6 mb-1">Registros por tabla</h1>
+            <p class="text-muted mb-0">Conteo total de filas para las tablas definidas en la arquitectura.</p>
         </div>
-        <div class="content-real">
-            <div class="row justify-content-center g-4">
-                <div class="col-md-4" data-reveal data-delay="1">
-                    <div class="card text-center p-3">
-                        <i class="bi bi-box-seam-fill" style="font-size: 2rem; color: var(--accent);"></i>
-                        <h5 class="mt-2">Products</h5>
-                        <p class="text-muted">Browse and manage products across all stores.</p>
-                        <a asp-controller="Products" asp-action="Index" class="btn btn-primary">
-                            <i class="bi bi-arrow-right"></i>
-                            Go to Products
-                        </a>
-                    </div>
-                </div>
-                <div class="col-md-4" data-reveal data-delay="2">
-                    <div class="card text-center p-3">
-                        <i class="bi bi-bag-fill" style="font-size: 2rem; color: var(--accent);"></i>
-                        <h5 class="mt-2">Orders</h5>
-                        <p class="text-muted">Track and manage customer orders in real time.</p>
-                        <a asp-controller="Orders" asp-action="Index" class="btn btn-success">
-                            <i class="bi bi-arrow-right"></i>
-                            Go to Orders
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <div class="home-dashboard__total" aria-label="Total records">
+            <span>@Model.TotalRecords.ToString("N0")</span>
+            <small>Total</small>
         </div>
     </div>
-</div>
+
+    <div class="home-chart glass" style="--chart-height: @(chartHeight)px;" data-reveal data-delay="1">
+        @foreach (var item in Model.TableCounts)
+        {
+            var width = Model.MaxRecords == 0 ? 0 : Math.Max(4, (int)Math.Round(item.Count * 100.0 / Model.MaxRecords));
+            <div class="home-chart__row">
+                <div class="home-chart__label">
+                    <span class="home-chart__icon"><i class="bi @item.Icon"></i></span>
+                    @if (item.ControllerName is not null)
+                    {
+                        <a asp-controller="@item.ControllerName" asp-action="Index">@item.TableName</a>
+                    }
+                    else
+                    {
+                        <span>@item.TableName</span>
+                    }
+                </div>
+                <div class="home-chart__track" aria-label="@item.TableName: @item.Count registros">
+                    <div class="home-chart__bar" style="width: @width%;"></div>
+                    <span class="home-chart__value">@item.Count.ToString("N0")</span>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<style>
+    .home-dashboard {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .home-dashboard__header {
+        align-items: center;
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+    }
+
+    .home-dashboard__eyebrow {
+        align-items: center;
+        color: var(--accent);
+        display: inline-flex;
+        font-size: 0.78rem;
+        font-weight: 800;
+        gap: 0.45rem;
+        letter-spacing: 0.03em;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+    }
+
+    .home-dashboard__total {
+        align-items: center;
+        background: var(--glass-sheen), var(--soft-card-strong);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        display: grid;
+        min-width: 118px;
+        padding: 0.8rem 1rem;
+        text-align: right;
+    }
+
+    .home-dashboard__total span {
+        color: var(--color-text);
+        font-size: 1.45rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .home-dashboard__total small {
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .home-chart {
+        border-radius: var(--radius);
+        display: grid;
+        gap: 0.75rem;
+        min-height: var(--chart-height);
+        padding: 1.1rem;
+    }
+
+    .home-chart__row {
+        align-items: center;
+        display: grid;
+        gap: 0.8rem;
+        grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+        min-height: 34px;
+    }
+
+    .home-chart__label {
+        align-items: center;
+        color: var(--color-text);
+        display: flex;
+        font-size: 0.9rem;
+        font-weight: 750;
+        gap: 0.55rem;
+        min-width: 0;
+    }
+
+    .home-chart__label a,
+    .home-chart__label span {
+        overflow-wrap: anywhere;
+    }
+
+    .home-chart__icon {
+        align-items: center;
+        background: var(--accent-soft);
+        border: 1px solid var(--color-border);
+        border-radius: 0.65rem;
+        color: var(--accent);
+        display: inline-flex;
+        flex: 0 0 32px;
+        height: 32px;
+        justify-content: center;
+        width: 32px;
+    }
+
+    .home-chart__track {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.38);
+        border: 1px solid var(--color-border);
+        border-radius: 0.7rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        min-height: 34px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .home-chart__bar {
+        background: linear-gradient(90deg, #14b8a6, var(--accent));
+        border-radius: inherit;
+        bottom: 0;
+        left: 0;
+        min-width: 0;
+        position: absolute;
+        top: 0;
+    }
+
+    .home-chart__value {
+        color: var(--color-text);
+        font-size: 0.86rem;
+        font-weight: 800;
+        padding: 0 0.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    @@media (max-width: 720px) {
+        .home-dashboard__header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .home-dashboard__total {
+            text-align: left;
+        }
+
+        .home-chart__row {
+            align-items: stretch;
+            grid-template-columns: 1fr;
+            gap: 0.45rem;
+        }
+    }
+</style>
