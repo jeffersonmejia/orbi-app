@@ -1,227 +1,75 @@
 # Orbi
 
-Multi-service delivery platform. Restaurants, pharmacies and supermarkets in one web app.
+Aplicacion ASP.NET Core MVC para delivery multi-servicio: tiendas, productos, pedidos, pagos, repartidores y resenas.
 
-## Tech Stack
+## Stack
 
-| Technology            | Version |
-| --------------------- | ------- |
-| ASP.NET Core MVC      | 10.0    |
-| Entity Framework Core | 10.0    |
-| C#                    | 13      |
-| PostgreSQL            | 16      |
-| Bootstrap             | 5.3     |
-| Npgsql                | 10.0.2  |
+| Componente | Uso |
+| --- | --- |
+| ASP.NET Core MVC | Web app Razor/MVC |
+| Entity Framework Core | Acceso a datos y migraciones |
+| PostgreSQL | Base de datos |
+| ASP.NET Identity | Usuarios, roles y sesiones |
+| Bootstrap | UI base |
 
-## Entity Relationship
-
-```mermaid
-erDiagram
-    Customer ||--o{ Address : has
-    Customer ||--o{ Order : places
-    Customer ||--o{ Review : writes
-    StoreCategory ||--o{ Store : categorizes
-    Store ||--o{ Product : offers
-    Store ||--o{ Order : receives
-    Store ||--o{ Review : rated_by
-    Order ||--o{ OrderDetail : contains
-    Product ||--o{ OrderDetail : listed_in
-    OrderStatus ||--o{ Order : tracks
-    DeliveryDriver ||--o{ Order : delivers
-    PaymentMethod ||--o{ Payment : used_in
-    Order ||--o| Payment : pays
-
-    Customer {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        string Phone
-        string PasswordHash
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Address {
-        int Id PK
-        int CustomerId FK
-        string Street
-        string City
-        string State
-        string ZipCode
-        string Country
-        double Latitude
-        double Longitude
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    StoreCategory {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Store {
-        int Id PK
-        int CategoryId FK
-        string Name
-        string Description
-        string Phone
-        string Email
-        string StreetAddress
-        double Latitude
-        double Longitude
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Product {
-        int Id PK
-        int StoreId FK
-        string Name
-        string Description
-        dec Price
-        int Stock
-        string ImageUrl
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Order {
-        int Id PK
-        int CustomerId FK
-        int StoreId FK
-        int DeliveryDriverId FK
-        int OrderStatusId FK
-        int AddressId FK
-        dec TotalAmount
-        datetime OrderDate
-        datetime DeliveryDate
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    OrderDetail {
-        int Id PK
-        int OrderId FK
-        int ProductId FK
-        int Quantity
-        dec UnitPrice
-        dec Subtotal
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    OrderStatus {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    DeliveryDriver {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        string Phone
-        double CurrentLatitude
-        double CurrentLongitude
-        datetime LastLocationUpdate
-        bool IsAvailable
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    PaymentMethod {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Payment {
-        int Id PK
-        int OrderId FK
-        int PaymentMethodId FK
-        dec Amount
-        datetime PaymentDate
-        string TransactionId
-        string Status
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Review {
-        int Id PK
-        int CustomerId FK
-        int StoreId FK
-        int Rating
-        string Comment
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-```
-
-## Installation
+## Inicio
 
 ```bash
-# clone
-git clone git@github.com:jeffersonmejia/orbi-app.git
-cd orbi-app
-
-# database
 docker compose up -d
-
-# run
 dotnet run --project src/Orbi.Web
 ```
 
-Open `http://localhost:5130`.
+URL local: `http://localhost:5130`.
 
-## Database
+La app aplica migraciones pendientes y ejecuta el seed al iniciar.
 
-The application is prepared for large seed datasets and paginated screens.
+## Roles
 
-Applied optimizations:
+Los roles vienen de `docs/ROLS.MD` y se aplican como roles de ASP.NET Identity:
 
-- Server-side pagination was applied with `Skip` and `Take`.
-  This means the database returns only the current page instead of loading all records into memory. It keeps list screens stable when the database has hundreds of thousands of rows.
+| Rol | Acceso principal |
+| --- | --- |
+| `Admin` | CRUD total sobre entidades de negocio. |
+| `StoreOwner` | Su tienda, productos, pedidos, pagos y resenas de su tienda. |
+| `DeliveryDriver` | Su perfil y pedidos asignados. |
+| `Customer` | Su perfil, direcciones, pedidos, pagos y resenas. |
 
-- Projection queries were applied in services.
-  A projection selects only the fields needed by each view model. This reduces transferred data and avoids loading full entity graphs for list screens.
+La navegacion no oculta secciones por rol. Si un usuario entra a una seccion no permitida, recibe `403` y la pantalla indica `Acceso prohibido`.
 
-- `AsNoTracking` was applied to read-only list and detail queries.
-  This tells EF Core not to track entities that will not be edited. It reduces memory usage and speeds up read-heavy pages.
+## Seguridad Aplicada
 
-- Composite indexes were added through the `OptimizeLargeDatasetQueries` migration.
-  These indexes support common filters such as `IsActive`, foreign keys, ordering fields, and paginated list queries. They help PostgreSQL find records without scanning entire tables.
+- Filtro global de acceso por rol para controladores MVC de negocio.
+- Filtros de propiedad por `UserId` en servicios sensibles.
+- Validacion server-side para impedir acceso por IDs adivinados.
+- Excepciones de acceso convertidas a `403`.
+- Login con bloqueo por intentos fallidos.
+- Registro publico limitado a `Customer`, `DeliveryDriver` y `StoreOwner`.
+- Cookies `HttpOnly`, `SameSite=Strict` y `Secure` en produccion.
+- Headers de seguridad: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y `Permissions-Policy`.
+- HSTS fuera de desarrollo y redireccion HTTPS.
+- Cache JS del grafico del home para no re-renderizar si los conteos no cambiaron.
 
-- PostgreSQL `pg_trgm` and GIN trigram indexes were added through the `AddTrigramSearchIndexes` migration.
-  Trigram indexes optimize text searches used by `Contains`, such as searching names, emails, cities, and statuses.
+## Optimizaciones Aplicadas
 
-- Large dropdown queries were limited with `Take(200)`.
-  This avoids loading thousands of customers, products, stores, addresses, or orders into form select lists.
+- Paginacion server-side con `Skip`/`Take`.
+- Proyecciones a ViewModels en servicios.
+- `AsNoTracking` en lecturas.
+- Indices compuestos para filtros frecuentes.
+- Indices trigram GIN para busquedas de texto.
+- Dropdowns grandes limitados a 200 registros.
+- Cache en memoria para catalogos pequenos.
 
-- In-memory cache was added for small reference dropdowns.
-  Store categories, order statuses, and payment methods are cached because they change rarely and are reused often.
+## Pendiente
 
-EF Core applies pending migrations when the web app starts. Stopping Docker does not remove migration files. Removing the Docker volume deletes the database data, but the migrations remain in code and can be applied again.
+- Tests automatizados de acceso por rol y propiedad.
+- Flujos dedicados para cancelar pedidos y cambios operativos de estado.
+- Auditoria de acciones sensibles.
+- Confirmacion de email y recuperacion de contrasena.
+- Politicas de seguridad por ambiente para dominios reales de produccion.
 
-Materialized views are not required for the current CRUD screens. They should be added later only for dashboard-style reports or expensive aggregates.
+## Docs
 
-## Documentation
-
-| File                                    | Description                             |
-| --------------------------------------- | --------------------------------------- |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, patterns, ERD, scalability      |
-| [API.md](docs/API.md)                   | Endpoints, request and response schemas |
-| [ROLS.MD](docs/ROLS.MD)                 | Roles and permissions                   |
-| [SEED.md](docs/SEED.md)                 | Large seed plan and execution order     |
-| [SECURITY.md](SECURITY.md)              | Auth, data protection, reporting        |
+- `docs/API.md`: rutas MVC y permisos.
+- `docs/ROLS.MD`: matriz de roles.
+- `SECURITY.md`: politica y controles de seguridad.
+- `docs/SEED.md`: datos iniciales.

@@ -311,6 +311,7 @@
         (() => {
             window.startHomeRecordRefresh = window.startHomeRecordRefresh || (() => {
                 let intervalId;
+                let lastRenderedSignature = window.sessionStorage.getItem('orbi:home-record-counts:signature') || '';
 
                 async function refreshRecordCounts() {
                     const endpoint = '@Url.Action("RecordCounts", "Home")';
@@ -376,6 +377,18 @@
                         const data = await response.json();
                         const maxRecords = data.maxRecords || 0;
                         const counts = new Map(data.tableCounts.map(item => [item.tableName, item.count]));
+                        const signature = JSON.stringify({
+                            totalRecords: data.totalRecords || 0,
+                            maxRecords,
+                            tableCounts: data.tableCounts.map(item => [item.tableName, item.count])
+                        });
+
+                        if (signature === lastRenderedSignature) {
+                            return;
+                        }
+
+                        lastRenderedSignature = signature;
+                        window.sessionStorage.setItem('orbi:home-record-counts:signature', signature);
 
                         const nextTotal = data.totalRecords || 0;
                         if (animateCount(total, nextTotal)) {

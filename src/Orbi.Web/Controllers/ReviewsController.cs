@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
+using Orbi.Web.Security;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
 
@@ -11,11 +12,13 @@ public class ReviewsController : Controller
 {
     private readonly ReviewService _reviewService;
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public ReviewsController(ReviewService reviewService, AppDbContext context)
+    public ReviewsController(ReviewService reviewService, AppDbContext context, CurrentUserAccess access)
     {
         _reviewService = reviewService;
         _context = context;
+        _access = access;
     }
 
     public async Task<IActionResult> Index(
@@ -115,7 +118,7 @@ public class ReviewsController : Controller
 
     private async Task PopulateCustomersDropDownListAsync(object? selectedCustomer = null)
     {
-        var customers = await _context.Customers
+        var customers = await _access.ScopeCustomers(_context.Customers)
             .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)
@@ -133,7 +136,7 @@ public class ReviewsController : Controller
 
     private async Task PopulateStoresDropDownListAsync(object? selectedStore = null)
     {
-        var stores = await _context.Stores
+        var stores = await _access.ScopeStores(_context.Stores)
             .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)

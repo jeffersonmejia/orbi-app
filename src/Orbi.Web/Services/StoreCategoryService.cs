@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class StoreCategoryService : IEntityService<StoreCategory, StoreCategoryViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public StoreCategoryService(AppDbContext context)
+    public StoreCategoryService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<StoreCategoryViewModel>> GetAllAsync()
@@ -79,6 +82,9 @@ public class StoreCategoryService : IEntityService<StoreCategory, StoreCategoryV
 
     public async Task CreateAsync(StoreCategoryViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var category = new StoreCategory
         {
             Name = viewModel.Name,
@@ -92,6 +98,9 @@ public class StoreCategoryService : IEntityService<StoreCategory, StoreCategoryV
 
     public async Task UpdateAsync(StoreCategoryViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var category = await _context.StoreCategories
             .FirstOrDefaultAsync(c => c.Id == viewModel.Id && c.IsActive)
             ?? throw new KeyNotFoundException($"StoreCategory with Id {viewModel.Id} not found.");
@@ -104,6 +113,9 @@ public class StoreCategoryService : IEntityService<StoreCategory, StoreCategoryV
 
     public async Task SoftDeleteAsync(int id)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var category = await _context.StoreCategories
             .FirstOrDefaultAsync(c => c.Id == id && c.IsActive)
             ?? throw new KeyNotFoundException($"StoreCategory with Id {id} not found.");

@@ -1,46 +1,52 @@
 # Security
 
-## Supported Versions
-
-| Version | Supported |
-|---------|-----------|
-| 1.0.x | Yes |
-
 ## Reporting
 
-Email `security@orbi-platform.com`. Expect a response within 48 hours. Do not report vulnerabilities in public issues.
+Report vulnerabilities privately to `security@orbi-platform.com`.
 
 Include:
-- Type of issue
-- File paths and line numbers
-- Steps to reproduce
-- Proof of concept if available
 
-## Disclosure
+- Issue type
+- Affected paths and line numbers
+- Reproduction steps
+- Proof of concept, if available
 
-1. Acknowledge within 48 hours
-2. Validate the issue
-3. Develop and test a fix
-4. Release a patched version
-5. Credit the reporter
+Do not publish vulnerabilities in public issues.
 
-## Protections
+## Supported Version
 
-| Area | Measure |
-|------|---------|
-| Passwords | Hashed with salt, never stored in plain text |
-| CSRF | ValidateAntiForgeryToken on all POST actions |
-| SQL Injection | EF Core parameterized queries prevent injection |
-| Input Validation | Data Annotations with ModelState validation |
-| XSS | Razor auto-encodes output by default |
-| Soft Delete | IsActive flag preserves records while hiding them |
-| Secrets | Connection strings in environment variables or User Secrets |
-| CORS | Configured for trusted origins only |
+| Version | Supported |
+| --- | --- |
+| 1.0.x | Yes |
+
+## Current Protections
+
+| Area | Protection |
+| --- | --- |
+| Authentication | ASP.NET Identity with unique email and lockout after failed login attempts |
+| Authorization | Global MVC role filter plus service-level ownership filters |
+| Roles | `Admin`, `StoreOwner`, `DeliveryDriver`, `Customer` |
+| Ownership | Sensitive reads and writes validate `UserId` links |
+| Passwords | Identity password hashing; minimum 10 chars, digit, uppercase and symbol |
+| Sessions | `HttpOnly`, `SameSite=Strict`, secure cookies in production |
+| CSRF | Antiforgery validation on POST actions |
+| SQL Injection | EF Core parameterized queries |
+| XSS | Razor output encoding plus Content Security Policy |
+| Clickjacking | `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'` |
+| MIME sniffing | `X-Content-Type-Options: nosniff` |
+| Transport | HTTPS redirection and HSTS outside development |
+| Data retention | Soft delete through `IsActive` |
+
+## Access Behavior
+
+Navigation stays visible for all authenticated roles. If a role opens a forbidden route, the app returns `403` and shows `Acceso prohibido`.
 
 ## Production Checklist
 
-- Use HTTPS redirection and HSTS
-- Run dotnet list package --vulnerable regularly
-- Use least-privilege database user
-- Enable centralized logging
-- Configure rate limiting on auth endpoints
+- Set production connection strings through environment variables or user secrets.
+- Use a least-privilege PostgreSQL user.
+- Configure real HTTPS certificates and production host names.
+- Review CSP when adding external scripts, fonts or images.
+- Add email confirmation and password recovery before public deployment.
+- Add automated authorization tests for cross-user data access.
+- Run package vulnerability checks before releases.

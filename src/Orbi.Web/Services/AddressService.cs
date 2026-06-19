@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class AddressService : IEntityService<Address, AddressViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public AddressService(AppDbContext context)
+    public AddressService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<AddressViewModel>> GetAllAsync()
@@ -46,7 +49,7 @@ public class AddressService : IEntityService<Address, AddressViewModel>
 
     private IQueryable<AddressViewModel> GetAllQuery()
     {
-        return _context.Addresses
+        return _access.ScopeAddresses(_context.Addresses)
             .AsNoTracking()
             .Include(a => a.Customer)
             .Where(a => a.IsActive)
@@ -71,7 +74,7 @@ public class AddressService : IEntityService<Address, AddressViewModel>
 
     public async Task<AddressViewModel?> GetByIdAsync(int id)
     {
-        var address = await _context.Addresses
+        var address = await _access.ScopeAddresses(_context.Addresses)
             .AsNoTracking()
             .Include(a => a.Customer)
             .FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
@@ -97,6 +100,15 @@ public class AddressService : IEntityService<Address, AddressViewModel>
 
     public async Task CreateAsync(AddressViewModel viewModel)
     {
+        if (_access.IsCustomer)
+        {
+            viewModel.CustomerId = await _access.RequireOwnCustomerIdAsync(_context);
+        }
+        else if (!_access.IsAdmin)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var address = new Address
         {
             CustomerId = viewModel.CustomerId,
@@ -116,11 +128,13 @@ public class AddressService : IEntityService<Address, AddressViewModel>
 
     public async Task UpdateAsync(AddressViewModel viewModel)
     {
-        var address = await _context.Addresses
+        var address = await _access.ScopeAddresses(_context.Addresses)
             .FirstOrDefaultAsync(a => a.Id == viewModel.Id && a.IsActive)
             ?? throw new KeyNotFoundException($"Address with Id {viewModel.Id} not found.");
 
-        address.CustomerId = viewModel.CustomerId;
+        address.CustomerId = _access.IsCustomer
+            ? await _access.RequireOwnCustomerIdAsync(_context)
+            : viewModel.CustomerId;
         address.Street = viewModel.Street;
         address.City = viewModel.City;
         address.State = viewModel.State;
@@ -134,7 +148,7 @@ public class AddressService : IEntityService<Address, AddressViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var address = await _context.Addresses
+        var address = await _access.ScopeAddresses(_context.Addresses)
             .FirstOrDefaultAsync(a => a.Id == id && a.IsActive)
             ?? throw new KeyNotFoundException($"Address with Id {id} not found.");
 

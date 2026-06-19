@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public PaymentMethodService(AppDbContext context)
+    public PaymentMethodService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<PaymentMethodViewModel>> GetAllAsync()
@@ -79,6 +82,9 @@ public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodV
 
     public async Task CreateAsync(PaymentMethodViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var method = new PaymentMethod
         {
             Name = viewModel.Name,
@@ -92,6 +98,9 @@ public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodV
 
     public async Task UpdateAsync(PaymentMethodViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var method = await _context.PaymentMethods
             .FirstOrDefaultAsync(p => p.Id == viewModel.Id && p.IsActive)
             ?? throw new KeyNotFoundException($"PaymentMethod with Id {viewModel.Id} not found.");
@@ -104,6 +113,9 @@ public class PaymentMethodService : IEntityService<PaymentMethod, PaymentMethodV
 
     public async Task SoftDeleteAsync(int id)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var method = await _context.PaymentMethods
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive)
             ?? throw new KeyNotFoundException($"PaymentMethod with Id {id} not found.");

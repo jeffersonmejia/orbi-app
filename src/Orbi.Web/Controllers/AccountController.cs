@@ -12,6 +12,7 @@ namespace Orbi.Web.Controllers;
 
 public class AccountController : Controller
 {
+    private static readonly string[] SelfServiceRoles = ["Customer", "DeliveryDriver", "StoreOwner"];
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly AppDbContext _context;
@@ -51,6 +52,14 @@ public class AccountController : Controller
                 new("DeliveryDriver", "DeliveryDriver"),
                 new("StoreOwner", "StoreOwner")
             };
+            ViewBag.StoreCategories = new SelectList(_context.StoreCategories.Where(sc => sc.IsActive), "Id", "Name", model.StoreCategoryId);
+            return View(model);
+        }
+
+        if (!SelfServiceRoles.Contains(model.Role, StringComparer.Ordinal))
+        {
+            ModelState.AddModelError(nameof(model.Role), "Selected role is not available for self-service registration.");
+            ViewBag.Roles = SelfServiceRoles.Select(role => new SelectListItem(role, role)).ToList();
             ViewBag.StoreCategories = new SelectList(_context.StoreCategories.Where(sc => sc.IsActive), "Id", "Name", model.StoreCategoryId);
             return View(model);
         }
@@ -156,7 +165,7 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             TempData["Success"] = "Welcome back!";
@@ -168,6 +177,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {

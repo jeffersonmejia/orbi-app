@@ -23,7 +23,7 @@ These roles already exist in `DbSeeder`: `Customer`, `DeliveryDriver`, `StoreOwn
 
 `Customer` can only manage resources linked to their customer profile through `Customers.UserId`.
 
-Anonymous users should only access public screens such as home, login, register, and public catalog pages if enabled.
+Anonymous users can access home, login, register, record counts and database status only.
 
 ## Permission matrix
 
@@ -75,51 +75,32 @@ Examples:
 | `PaymentsController` | `Admin`. `Customer` for own payments. `StoreOwner` for own store payments. |
 | `ReviewsController` | `Admin`. `Customer` for own reviews. `StoreOwner` for own store review reads. |
 
-## Implementation notes
+## Implementation status
 
-Use `[Authorize]` on business controllers.
+Applied:
 
-Use role-specific authorization for administrative modules:
-
-```csharp
-[Authorize(Roles = "Admin")]
-public class StoreCategoriesController : Controller
-{
-}
-```
-
-Use shared role access only when the query also applies ownership filters:
-
-```csharp
-[Authorize(Roles = "Admin,StoreOwner")]
-public class ProductsController : Controller
-{
-}
-```
+- Global MVC role gate through `RoleAccessFilter`.
+- Ownership scoping through `CurrentUserAccess`.
+- Service-level filters for customers, addresses, stores, products, orders, drivers, payments and reviews.
+- Admin-only write guards for store categories, order statuses and payment methods.
+- POST ownership validation before sensitive writes.
+- Forbidden service access converted to `403`.
+- `AccessDeniedPath` points to `/Home/NotAuthorized`.
+- Navigation remains visible; forbidden sections show an access denied page instead of being hidden.
 
 Still pending:
 
-- Add `[Authorize]` to business controllers.
-- Add role-specific authorization per module.
-- Add `UserId` ownership filters in services and queries.
-- Hide menu items and action buttons by role.
-- Validate ownership again on POST actions.
-- Add access tests for cross-user data protection.
+- Add automated access tests for cross-user data protection.
+- Add audit logs for sensitive writes.
+- Add dedicated status-change flows for operational order updates.
+- Add email confirmation and password recovery.
 
 ## Error pages
 
 Current state:
 
-- There is a generic error view at `Views/Shared/Error.cshtml`.
-- There is no dedicated unauthorized page.
-- There is no dedicated not found page.
-- `AccessDeniedPath` currently points to `/Account/Login`.
-- Controller `NotFound()` responses currently use the default framework response.
-
-Recommended pages:
-
-- `Views/Shared/Unauthorized.cshtml` for access denied.
-- `Views/Shared/NotFound.cshtml` for missing resources.
-- Configure `AccessDeniedPath` to a real access denied route.
-- Configure status code handling for `404`.
-
+- Generic error view: `Views/Shared/Error.cshtml`.
+- Unauthorized page: `Views/Home/NotAuthorized.cshtml`.
+- Not found page: `Views/Home/NotFound.cshtml`.
+- `AccessDeniedPath`: `/Home/NotAuthorized`.
+- `404` status handling routes to the not found page.

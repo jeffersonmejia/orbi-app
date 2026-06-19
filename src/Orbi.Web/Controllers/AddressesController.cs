@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
+using Orbi.Web.Security;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
 
@@ -11,11 +12,13 @@ public class AddressesController : Controller
 {
     private readonly AddressService _addressService;
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public AddressesController(AddressService addressService, AppDbContext context)
+    public AddressesController(AddressService addressService, AppDbContext context, CurrentUserAccess access)
     {
         _addressService = addressService;
         _context = context;
+        _access = access;
     }
 
     public async Task<IActionResult> Index(
@@ -111,7 +114,7 @@ public class AddressesController : Controller
 
     private async Task PopulateCustomersDropDownListAsync(object? selectedCustomer = null)
     {
-        var customers = await _context.Customers
+        var customers = await _access.ScopeCustomers(_context.Customers)
             .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class StoreService : IEntityService<Store, StoreViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public StoreService(AppDbContext context)
+    public StoreService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<StoreViewModel>> GetAllAsync()
@@ -46,7 +49,7 @@ public class StoreService : IEntityService<Store, StoreViewModel>
 
     private IQueryable<StoreViewModel> GetAllQuery()
     {
-        return _context.Stores
+        return _access.ScopeStores(_context.Stores)
             .AsNoTracking()
             .Include(s => s.Category)
             .Where(s => s.IsActive)
@@ -70,7 +73,7 @@ public class StoreService : IEntityService<Store, StoreViewModel>
 
     public async Task<StoreViewModel?> GetByIdAsync(int id)
     {
-        var store = await _context.Stores
+        var store = await _access.ScopeStores(_context.Stores)
             .AsNoTracking()
             .Include(s => s.Category)
             .FirstOrDefaultAsync(s => s.Id == id && s.IsActive);
@@ -96,8 +99,12 @@ public class StoreService : IEntityService<Store, StoreViewModel>
 
     public async Task CreateAsync(StoreViewModel viewModel)
     {
+        if (!_access.IsAdmin && !_access.IsStoreOwner)
+            throw new UnauthorizedAccessException();
+
         var store = new Store
         {
+            UserId = _access.IsStoreOwner ? _access.UserId : null,
             CategoryId = viewModel.CategoryId,
             Name = viewModel.Name,
             Description = viewModel.Description,
@@ -115,7 +122,7 @@ public class StoreService : IEntityService<Store, StoreViewModel>
 
     public async Task UpdateAsync(StoreViewModel viewModel)
     {
-        var store = await _context.Stores
+        var store = await _access.ScopeStores(_context.Stores)
             .FirstOrDefaultAsync(s => s.Id == viewModel.Id && s.IsActive)
             ?? throw new KeyNotFoundException($"Store with Id {viewModel.Id} not found.");
 
@@ -133,7 +140,10 @@ public class StoreService : IEntityService<Store, StoreViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var store = await _context.Stores
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var store = await _access.ScopeStores(_context.Stores)
             .FirstOrDefaultAsync(s => s.Id == id && s.IsActive)
             ?? throw new KeyNotFoundException($"Store with Id {id} not found.");
 

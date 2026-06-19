@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriverViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public DeliveryDriverService(AppDbContext context)
+    public DeliveryDriverService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<DeliveryDriverViewModel>> GetAllAsync()
@@ -46,7 +49,7 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
 
     private IQueryable<DeliveryDriverViewModel> GetAllQuery()
     {
-        return _context.DeliveryDrivers
+        return _access.ScopeDeliveryDrivers(_context.DeliveryDrivers)
             .AsNoTracking()
             .Where(d => d.IsActive)
             .OrderBy(d => d.LastName)
@@ -69,7 +72,7 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
 
     public async Task<DeliveryDriverViewModel?> GetByIdAsync(int id)
     {
-        var driver = await _context.DeliveryDrivers
+        var driver = await _access.ScopeDeliveryDrivers(_context.DeliveryDrivers)
             .AsNoTracking()
             .FirstOrDefaultAsync(d => d.Id == id && d.IsActive);
 
@@ -93,6 +96,9 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
 
     public async Task CreateAsync(DeliveryDriverViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var driver = new DeliveryDriver
         {
             FirstName = viewModel.FirstName,
@@ -112,7 +118,10 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
 
     public async Task UpdateAsync(DeliveryDriverViewModel viewModel)
     {
-        var driver = await _context.DeliveryDrivers
+        if (!_access.IsAdmin && !_access.IsDeliveryDriver)
+            throw new UnauthorizedAccessException();
+
+        var driver = await _access.ScopeDeliveryDrivers(_context.DeliveryDrivers)
             .FirstOrDefaultAsync(d => d.Id == viewModel.Id && d.IsActive)
             ?? throw new KeyNotFoundException($"DeliveryDriver with Id {viewModel.Id} not found.");
 
@@ -129,7 +138,10 @@ public class DeliveryDriverService : IEntityService<DeliveryDriver, DeliveryDriv
 
     public async Task SoftDeleteAsync(int id)
     {
-        var driver = await _context.DeliveryDrivers
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var driver = await _access.ScopeDeliveryDrivers(_context.DeliveryDrivers)
             .FirstOrDefaultAsync(d => d.Id == id && d.IsActive)
             ?? throw new KeyNotFoundException($"DeliveryDriver with Id {id} not found.");
 

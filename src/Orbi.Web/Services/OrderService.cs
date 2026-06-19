@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class OrderService : IEntityService<Order, OrderViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public OrderService(AppDbContext context)
+    public OrderService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<OrderViewModel>> GetAllAsync()
@@ -48,7 +51,7 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     private IQueryable<OrderViewModel> GetAllQuery()
     {
-        return _context.Orders
+        return _access.ScopeOrders(_context.Orders)
             .AsNoTracking()
             .Include(o => o.Customer)
             .Include(o => o.Store)
@@ -79,7 +82,7 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     public async Task<OrderViewModel?> GetByIdAsync(int id)
     {
-        var order = await _context.Orders
+        var order = await _access.ScopeOrders(_context.Orders)
             .AsNoTracking()
             .Include(o => o.Customer)
             .Include(o => o.Store)
@@ -122,6 +125,19 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     public async Task CreateAsync(OrderViewModel viewModel)
     {
+        if (_access.IsCustomer)
+        {
+            viewModel.CustomerId = await _access.RequireOwnCustomerIdAsync(_context);
+            var ownsAddress = await _context.Addresses
+                .AnyAsync(a => a.Id == viewModel.AddressId && a.CustomerId == viewModel.CustomerId);
+
+            if (!ownsAddress) throw new UnauthorizedAccessException();
+        }
+        else if (!_access.IsAdmin)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var order = new Order
         {
             CustomerId = viewModel.CustomerId,
@@ -164,18 +180,33 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     public async Task UpdateAsync(OrderViewModel viewModel)
     {
-        var order = await _context.Orders
+        var order = await _access.ScopeOrders(_context.Orders)
             .Include(o => o.OrderDetails)
             .FirstOrDefaultAsync(o => o.Id == viewModel.Id && o.IsActive)
             ?? throw new KeyNotFoundException($"Order with Id {viewModel.Id} not found.");
 
-        order.CustomerId = viewModel.CustomerId;
-        order.StoreId = viewModel.StoreId;
-        order.DeliveryDriverId = viewModel.DeliveryDriverId;
-        order.OrderStatusId = viewModel.OrderStatusId;
-        order.AddressId = viewModel.AddressId;
+        if (_access.IsDeliveryDriver)
+        {
+            order.OrderStatusId = viewModel.OrderStatusId;
+            await _context.SaveChangesAsync();
+            return;
+        }
 
-        if (viewModel.Items.Count > 0)
+        if (_access.IsStoreOwner)
+        {
+            order.DeliveryDriverId = viewModel.DeliveryDriverId;
+            order.OrderStatusId = viewModel.OrderStatusId;
+        }
+        else
+        {
+            order.CustomerId = viewModel.CustomerId;
+            order.StoreId = viewModel.StoreId;
+            order.DeliveryDriverId = viewModel.DeliveryDriverId;
+            order.OrderStatusId = viewModel.OrderStatusId;
+            order.AddressId = viewModel.AddressId;
+        }
+
+        if (_access.IsAdmin && viewModel.Items.Count > 0)
         {
             _context.OrderDetails.RemoveRange(order.OrderDetails);
 
@@ -209,7 +240,10 @@ public class OrderService : IEntityService<Order, OrderViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var order = await _context.Orders
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var order = await _access.ScopeOrders(_context.Orders)
             .Include(o => o.OrderDetails)
             .FirstOrDefaultAsync(o => o.Id == id && o.IsActive)
             ?? throw new KeyNotFoundException($"Order with Id {id} not found.");

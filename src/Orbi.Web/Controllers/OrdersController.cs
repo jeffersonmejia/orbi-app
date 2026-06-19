@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Orbi.Web.Data;
+using Orbi.Web.Security;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
 
@@ -13,12 +14,14 @@ public class OrdersController : Controller
     private readonly OrderService _orderService;
     private readonly AppDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly CurrentUserAccess _access;
 
-    public OrdersController(OrderService orderService, AppDbContext context, IMemoryCache cache)
+    public OrdersController(OrderService orderService, AppDbContext context, IMemoryCache cache, CurrentUserAccess access)
     {
         _orderService = orderService;
         _context = context;
         _cache = cache;
+        _access = access;
     }
 
     public async Task<IActionResult> Index(
@@ -114,7 +117,7 @@ public class OrdersController : Controller
 
     private async Task PopulateDropDownListsAsync(object? selectedValues = null)
     {
-        var customers = await _context.Customers
+        var customers = await _access.ScopeCustomers(_context.Customers)
             .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.FirstName)
@@ -126,7 +129,7 @@ public class OrdersController : Controller
             })
             .ToListAsync();
 
-        var stores = await _context.Stores
+        var stores = await _access.ScopeStores(_context.Stores)
             .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)
@@ -138,7 +141,7 @@ public class OrdersController : Controller
             })
             .ToListAsync();
 
-        var drivers = await _context.DeliveryDrivers
+        var drivers = await _access.ScopeDeliveryDrivers(_context.DeliveryDrivers)
             .AsNoTracking()
             .Where(d => d.IsActive && d.IsAvailable)
             .OrderBy(d => d.FirstName)
@@ -165,7 +168,7 @@ public class OrdersController : Controller
             .ToListAsync();
         });
 
-        var addresses = await _context.Addresses
+        var addresses = await _access.ScopeAddresses(_context.Addresses)
             .AsNoTracking()
             .Where(a => a.IsActive)
             .OrderBy(a => a.Street)
@@ -177,7 +180,7 @@ public class OrdersController : Controller
             })
             .ToListAsync();
 
-        var products = await _context.Products
+        var products = await _access.ScopeProducts(_context.Products)
             .AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)

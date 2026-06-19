@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Orbi.Web.Data;
+using Orbi.Web.Security;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
 
@@ -13,12 +14,14 @@ public class PaymentsController : Controller
     private readonly PaymentService _paymentService;
     private readonly AppDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly CurrentUserAccess _access;
 
-    public PaymentsController(PaymentService paymentService, AppDbContext context, IMemoryCache cache)
+    public PaymentsController(PaymentService paymentService, AppDbContext context, IMemoryCache cache, CurrentUserAccess access)
     {
         _paymentService = paymentService;
         _context = context;
         _cache = cache;
+        _access = access;
     }
 
     public async Task<IActionResult> Index(
@@ -118,7 +121,7 @@ public class PaymentsController : Controller
 
     private async Task PopulateOrdersDropDownListAsync(object? selectedOrder = null)
     {
-        var orders = await _context.Orders
+        var orders = await _access.ScopeOrders(_context.Orders)
             .AsNoTracking()
             .Where(o => o.IsActive)
             .OrderByDescending(o => o.OrderDate)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class CustomerService : IEntityService<Customer, CustomerViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public CustomerService(AppDbContext context)
+    public CustomerService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<CustomerViewModel>> GetAllAsync()
@@ -46,7 +49,7 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
 
     private IQueryable<CustomerViewModel> GetAllQuery()
     {
-        return _context.Customers
+        return _access.ScopeCustomers(_context.Customers)
             .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.LastName)
@@ -65,7 +68,7 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
 
     public async Task<CustomerViewModel?> GetByIdAsync(int id)
     {
-        var customer = await _context.Customers
+        var customer = await _access.ScopeCustomers(_context.Customers)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
 
@@ -85,6 +88,9 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
 
     public async Task CreateAsync(CustomerViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var customer = new Customer
         {
             FirstName = viewModel.FirstName,
@@ -100,7 +106,7 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
 
     public async Task UpdateAsync(CustomerViewModel viewModel)
     {
-        var customer = await _context.Customers
+        var customer = await _access.ScopeCustomers(_context.Customers)
             .FirstOrDefaultAsync(c => c.Id == viewModel.Id && c.IsActive)
             ?? throw new KeyNotFoundException($"Customer with Id {viewModel.Id} not found.");
 
@@ -114,7 +120,10 @@ public class CustomerService : IEntityService<Customer, CustomerViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var customer = await _context.Customers
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var customer = await _access.ScopeCustomers(_context.Customers)
             .FirstOrDefaultAsync(c => c.Id == id && c.IsActive)
             ?? throw new KeyNotFoundException($"Customer with Id {id} not found.");
 

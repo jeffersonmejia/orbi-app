@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
+using Orbi.Web.Security;
 using Orbi.Web.Services;
 using Orbi.Web.ViewModels;
 
@@ -11,11 +12,13 @@ public class ProductsController : Controller
 {
     private readonly ProductService _productService;
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public ProductsController(ProductService productService, AppDbContext context)
+    public ProductsController(ProductService productService, AppDbContext context, CurrentUserAccess access)
     {
         _productService = productService;
         _context = context;
+        _access = access;
     }
 
     public async Task<IActionResult> Index(
@@ -111,7 +114,7 @@ public class ProductsController : Controller
 
     private async Task PopulateStoresDropDownListAsync(object? selectedStore = null)
     {
-        var stores = await _context.Stores
+        var stores = await _access.ScopeStores(_context.Stores)
             .AsNoTracking()
             .Where(s => s.IsActive)
             .OrderBy(s => s.Name)

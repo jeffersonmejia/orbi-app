@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class ReviewService : IEntityService<Review, ReviewViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public ReviewService(AppDbContext context)
+    public ReviewService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<ReviewViewModel>> GetAllAsync()
@@ -47,7 +50,7 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
 
     private IQueryable<ReviewViewModel> GetAllQuery()
     {
-        return _context.Reviews
+        return _access.ScopeReviews(_context.Reviews)
             .AsNoTracking()
             .Include(r => r.Customer)
             .Include(r => r.Store)
@@ -68,7 +71,7 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
 
     public async Task<ReviewViewModel?> GetByIdAsync(int id)
     {
-        var review = await _context.Reviews
+        var review = await _access.ScopeReviews(_context.Reviews)
             .AsNoTracking()
             .Include(r => r.Customer)
             .Include(r => r.Store)
@@ -92,6 +95,15 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
 
     public async Task CreateAsync(ReviewViewModel viewModel)
     {
+        if (_access.IsCustomer)
+        {
+            viewModel.CustomerId = await _access.RequireOwnCustomerIdAsync(_context);
+        }
+        else if (!_access.IsAdmin)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var review = new Review
         {
             CustomerId = viewModel.CustomerId,
@@ -107,11 +119,13 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
 
     public async Task UpdateAsync(ReviewViewModel viewModel)
     {
-        var review = await _context.Reviews
+        var review = await _access.ScopeReviews(_context.Reviews)
             .FirstOrDefaultAsync(r => r.Id == viewModel.Id && r.IsActive)
             ?? throw new KeyNotFoundException($"Review with Id {viewModel.Id} not found.");
 
-        review.CustomerId = viewModel.CustomerId;
+        review.CustomerId = _access.IsCustomer
+            ? await _access.RequireOwnCustomerIdAsync(_context)
+            : viewModel.CustomerId;
         review.StoreId = viewModel.StoreId;
         review.Rating = viewModel.Rating;
         review.Comment = viewModel.Comment;
@@ -121,7 +135,7 @@ public class ReviewService : IEntityService<Review, ReviewViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var review = await _context.Reviews
+        var review = await _access.ScopeReviews(_context.Reviews)
             .FirstOrDefaultAsync(r => r.Id == id && r.IsActive)
             ?? throw new KeyNotFoundException($"Review with Id {id} not found.");
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class PaymentService : IEntityService<Payment, PaymentViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public PaymentService(AppDbContext context)
+    public PaymentService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<PaymentViewModel>> GetAllAsync()
@@ -48,7 +51,7 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
 
     private IQueryable<PaymentViewModel> GetAllQuery()
     {
-        return _context.Payments
+        return _access.ScopePayments(_context.Payments)
             .AsNoTracking()
             .Include(p => p.Order)
             .Include(p => p.PaymentMethod)
@@ -71,7 +74,7 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
 
     public async Task<PaymentViewModel?> GetByIdAsync(int id)
     {
-        var payment = await _context.Payments
+        var payment = await _access.ScopePayments(_context.Payments)
             .AsNoTracking()
             .Include(p => p.Order)
             .Include(p => p.PaymentMethod)
@@ -97,6 +100,12 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
 
     public async Task CreateAsync(PaymentViewModel viewModel)
     {
+        var canPayOrder = await _access.ScopeOrders(_context.Orders)
+            .AnyAsync(o => o.Id == viewModel.OrderId);
+
+        if (!canPayOrder)
+            throw new UnauthorizedAccessException();
+
         var payment = new Payment
         {
             OrderId = viewModel.OrderId,
@@ -114,7 +123,10 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
 
     public async Task UpdateAsync(PaymentViewModel viewModel)
     {
-        var payment = await _context.Payments
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var payment = await _access.ScopePayments(_context.Payments)
             .FirstOrDefaultAsync(p => p.Id == viewModel.Id && p.IsActive)
             ?? throw new KeyNotFoundException($"Payment with Id {viewModel.Id} not found.");
 
@@ -129,7 +141,10 @@ public class PaymentService : IEntityService<Payment, PaymentViewModel>
 
     public async Task SoftDeleteAsync(int id)
     {
-        var payment = await _context.Payments
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
+        var payment = await _access.ScopePayments(_context.Payments)
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive)
             ?? throw new KeyNotFoundException($"Payment with Id {id} not found.");
 

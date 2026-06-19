@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class ProductService : IEntityService<Product, ProductViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public ProductService(AppDbContext context)
+    public ProductService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<ProductViewModel>> GetAllAsync()
@@ -46,7 +49,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
 
     private IQueryable<ProductViewModel> GetAllQuery()
     {
-        return _context.Products
+        return _access.ScopeProducts(_context.Products)
             .AsNoTracking()
             .Include(p => p.Store)
             .Where(p => p.IsActive)
@@ -68,7 +71,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
 
     public async Task<ProductViewModel?> GetByIdAsync(int id)
     {
-        var product = await _context.Products
+        var product = await _access.ScopeProducts(_context.Products)
             .AsNoTracking()
             .Include(p => p.Store)
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
@@ -92,6 +95,9 @@ public class ProductService : IEntityService<Product, ProductViewModel>
 
     public async Task CreateAsync(ProductViewModel viewModel)
     {
+        if (!_access.IsAdmin && !await _access.ScopeStores(_context.Stores).AnyAsync(s => s.Id == viewModel.StoreId))
+            throw new UnauthorizedAccessException();
+
         var product = new Product
         {
             StoreId = viewModel.StoreId,
@@ -109,7 +115,7 @@ public class ProductService : IEntityService<Product, ProductViewModel>
 
     public async Task UpdateAsync(ProductViewModel viewModel)
     {
-        var product = await _context.Products
+        var product = await _access.ScopeProducts(_context.Products)
             .FirstOrDefaultAsync(p => p.Id == viewModel.Id && p.IsActive)
             ?? throw new KeyNotFoundException($"Product with Id {viewModel.Id} not found.");
 
@@ -120,14 +126,19 @@ public class ProductService : IEntityService<Product, ProductViewModel>
         product.ImageUrl = viewModel.ImageUrl;
 
         if (viewModel.StoreId > 0)
+        {
+            if (!_access.IsAdmin && !await _access.ScopeStores(_context.Stores).AnyAsync(s => s.Id == viewModel.StoreId))
+                throw new UnauthorizedAccessException();
+
             product.StoreId = viewModel.StoreId;
+        }
 
         await _context.SaveChangesAsync();
     }
 
     public async Task SoftDeleteAsync(int id)
     {
-        var product = await _context.Products
+        var product = await _access.ScopeProducts(_context.Products)
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive)
             ?? throw new KeyNotFoundException($"Product with Id {id} not found.");
 

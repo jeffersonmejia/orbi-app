@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orbi.Web.Data;
 using Orbi.Web.Models;
+using Orbi.Web.Security;
 using Orbi.Web.ViewModels;
 
 namespace Orbi.Web.Services;
@@ -8,10 +9,12 @@ namespace Orbi.Web.Services;
 public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewModel>
 {
     private readonly AppDbContext _context;
+    private readonly CurrentUserAccess _access;
 
-    public OrderStatusService(AppDbContext context)
+    public OrderStatusService(AppDbContext context, CurrentUserAccess access)
     {
         _context = context;
+        _access = access;
     }
 
     public async Task<IEnumerable<OrderStatusViewModel>> GetAllAsync()
@@ -78,6 +81,9 @@ public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewMod
 
     public async Task CreateAsync(OrderStatusViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var status = new OrderStatus
         {
             Name = viewModel.Name,
@@ -91,6 +97,9 @@ public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewMod
 
     public async Task UpdateAsync(OrderStatusViewModel viewModel)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var status = await _context.OrderStatuses
             .FirstOrDefaultAsync(s => s.Id == viewModel.Id)
             ?? throw new KeyNotFoundException($"OrderStatus with Id {viewModel.Id} not found.");
@@ -103,6 +112,9 @@ public class OrderStatusService : IEntityService<OrderStatus, OrderStatusViewMod
 
     public async Task SoftDeleteAsync(int id)
     {
+        if (!_access.IsAdmin)
+            throw new UnauthorizedAccessException();
+
         var status = await _context.OrderStatuses
             .FirstOrDefaultAsync(s => s.Id == id)
             ?? throw new KeyNotFoundException($"OrderStatus with Id {id} not found.");
