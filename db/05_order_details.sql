@@ -13,7 +13,7 @@ SELECT
 FROM "Orders" o
 CROSS JOIN LATERAL generate_series(1, CASE WHEN o."Id" <= 50000 THEN 2 ELSE 1 END) AS d(detail_no)
 CROSS JOIN LATERAL (
-    SELECT 1 + ((o."Id" + d.detail_no) % 4) AS quantity
+    SELECT CASE WHEN ((o."Id" + d.detail_no) % 5) = 0 THEN 2 ELSE 1 END AS quantity
 ) q
 JOIN "Products" p
     ON p."Id" = o."StoreId" + (2000 * ((o."Id" + d.detail_no) % 12));
@@ -30,4 +30,3 @@ FROM (
 WHERE totals."OrderId" = o."Id";
 
 COMMIT;
-
