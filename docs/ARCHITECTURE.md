@@ -12,15 +12,15 @@ Orbi es una aplicación web de delivery desarrollada con ASP.NET Core MVC, Entit
 
 ```mermaid
 flowchart TD
-    Admin[Admin] --> Orbi[Orbi Web App]
-    Owner[StoreOwner] --> Orbi
-    Driver[DeliveryDriver] --> Orbi
-    Customer[Customer] --> Orbi
-    Orbi --> PostgreSQL[(PostgreSQL)]
-    Orbi --> Identity[ASP.NET Identity]
-    Docker[Docker Compose] --> PostgreSQL
-    Docker --> Seed[Seed SQL Scripts]
-    Seed --> PostgreSQL
+    admin["Admin"] --> orbi["Orbi Web App"]
+    owner["StoreOwner"] --> orbi
+    driver["DeliveryDriver"] --> orbi
+    customer["Customer"] --> orbi
+    orbi --> database[("PostgreSQL")]
+    orbi --> auth["ASP.NET Identity"]
+    compose["Docker Compose"] --> database
+    compose --> seed["Seed SQL Scripts"]
+    seed --> database
 ```
 
 | Elemento | Descripción |
@@ -37,12 +37,12 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Browser[Navegador web] --> Web[Orbi.Web ASP.NET Core MVC]
-    Web --> EF[Entity Framework Core]
-    Web --> Identity[ASP.NET Identity]
-    EF --> DB[(PostgreSQL OrbiDb)]
-    Identity --> DB
-    Seed[orbi-seed container] --> DB
+    browser["Navegador web"] --> web["Orbi.Web ASP.NET Core MVC"]
+    web --> efcore["Entity Framework Core"]
+    web --> auth["ASP.NET Identity"]
+    efcore --> db[("PostgreSQL OrbiDb")]
+    auth --> db
+    seed["orbi-seed container"] --> db
 ```
 
 | Contenedor | Tecnología | Responsabilidad |
@@ -58,18 +58,18 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Views[Razor Views] --> ViewModels[ViewModels]
-    ViewModels --> Controllers[Controllers]
-    Controllers --> Filters[Security Filters]
-    Controllers --> Services[Services]
-    Services --> Access[CurrentUserAccess]
-    Services --> DbContext[AppDbContext]
-    DbContext --> Models[Models]
-    DbContext --> PostgreSQL[(PostgreSQL)]
-    Program[Program.cs] --> Controllers
-    Program --> Services
-    Program --> DbContext
-    Program --> Identity[Identity]
+    views["Razor Views"] --> viewmodels["ViewModels"]
+    viewmodels --> controllers["Controllers"]
+    controllers --> filters["Security Filters"]
+    controllers --> services["Services"]
+    services --> access["CurrentUserAccess"]
+    services --> dbcontext["AppDbContext"]
+    dbcontext --> models["Models"]
+    dbcontext --> database[("PostgreSQL")]
+    program["Program.cs"] --> controllers
+    program --> services
+    program --> dbcontext
+    program --> auth["Identity"]
 ```
 
 | Componente | Responsabilidad |
@@ -89,25 +89,25 @@ flowchart TD
 ```mermaid
 graph TD
     subgraph Presentation
-        Views[Razor Views]
-        ViewModels
-        Controllers
+        views2["Razor Views"]
+        viewmodels2["ViewModels"]
+        controllers2["Controllers"]
     end
     subgraph Business
-        Services
+        services2["Services"]
     end
     subgraph Data
-        AppDbContext
-        Repositories
+        dbcontext2["AppDbContext"]
+        repositories2["Repositories"]
     end
     subgraph Storage
-        PostgreSQL[(PostgreSQL)]
+        database2[("PostgreSQL")]
     end
-    Controllers --> Services
-    Services --> AppDbContext
-    AppDbContext --> PostgreSQL
-    Views --> ViewModels
-    ViewModels --> Controllers
+    controllers2 --> services2
+    services2 --> dbcontext2
+    dbcontext2 --> database2
+    views2 --> viewmodels2
+    viewmodels2 --> controllers2
 ```
 
 ## Flujo principal de ejecución
@@ -137,27 +137,27 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    AspNetUsers ||--o| Customers : owns_profile
-    AspNetUsers ||--o{ Stores : owns
-    AspNetUsers ||--o| DeliveryDrivers : owns_profile
+    ASP_NET_USERS ||--o| CUSTOMERS : owns_profile
+    ASP_NET_USERS ||--o{ STORES : owns
+    ASP_NET_USERS ||--o| DELIVERY_DRIVERS : owns_profile
 
-    Customers ||--o{ Addresses : has
-    Customers ||--o{ Orders : places
-    Customers ||--o{ Reviews : writes
+    CUSTOMERS ||--o{ ADDRESSES : has
+    CUSTOMERS ||--o{ ORDERS : places
+    CUSTOMERS ||--o{ REVIEWS : writes
 
-    StoreCategories ||--o{ Stores : classifies
-    Stores ||--o{ Products : offers
-    Stores ||--o{ Orders : receives
-    Stores ||--o{ Reviews : receives
+    STORE_CATEGORIES ||--o{ STORES : classifies
+    STORES ||--o{ PRODUCTS : offers
+    STORES ||--o{ ORDERS : receives
+    STORES ||--o{ REVIEWS : receives
 
-    Addresses ||--o{ Orders : delivery_address
-    OrderStatuses ||--o{ Orders : tracks
-    DeliveryDrivers o|--o{ Orders : delivers
+    ADDRESSES ||--o{ ORDERS : delivery_address
+    ORDER_STATUSES ||--o{ ORDERS : tracks
+    DELIVERY_DRIVERS ||--o{ ORDERS : delivers
 
-    Orders ||--o{ OrderDetails : contains
-    Products ||--o{ OrderDetails : included_in
-    Orders ||--o| Payments : has
-    PaymentMethods ||--o{ Payments : used_by
+    ORDERS ||--o{ ORDER_DETAILS : contains
+    PRODUCTS ||--o{ ORDER_DETAILS : included_in
+    ORDERS ||--o| PAYMENTS : has
+    PAYMENT_METHODS ||--o{ PAYMENTS : used_by
 ```
 
 ## Atributos de calidad
