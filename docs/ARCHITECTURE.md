@@ -204,3 +204,21 @@ erDiagram
 | `PaymentMethod` | Catálogo de métodos de pago disponibles en la plataforma. | Tiene muchos `Payments`; su nombre es único. |
 | `Payment` | Pago asociado a un pedido. Registra método de pago, monto, fecha, transacción, estado y eliminación lógica. | Pertenece a una `Order` en relación uno a uno y a un `PaymentMethod`. |
 | `Review` | Reseña realizada por un cliente sobre una tienda. Guarda calificación, comentario, estado activo y fechas de auditoría. | Pertenece a un `Customer` y a una `Store`. |
+
+### Tablas, campos y relaciones
+
+| Tabla | Campos principales | Llave primaria | Llaves foráneas y relaciones |
+| --- | --- | --- | --- |
+| `AspNetUsers` | `Id`, `UserName`, `Email`, `PasswordHash`, `FirstName`, `LastName` | `Id` | Tabla base de ASP.NET Identity; se relaciona con `Customers.UserId`, `Stores.UserId` y `DeliveryDrivers.UserId`. |
+| `Customers` | `Id`, `UserId`, `FirstName`, `LastName`, `Email`, `Phone`, `IsActive`, `CreatedAt`, `UpdatedAt` | `Id` | `UserId` referencia `AspNetUsers.Id`; se relaciona uno a muchos con `Addresses`, `Orders` y `Reviews`. |
+| `Addresses` | `Id`, `CustomerId`, `Street`, `City`, `State`, `ZipCode`, `Country`, `Latitude`, `Longitude`, `IsActive` | `Id` | `CustomerId` referencia `Customers.Id`; una dirección puede ser usada por pedidos mediante `Orders.AddressId`. |
+| `StoreCategories` | `Id`, `Name`, `Description`, `IsActive` | `Id` | No tiene FK; se relaciona uno a muchos con `Stores` mediante `Stores.CategoryId`. |
+| `Stores` | `Id`, `UserId`, `CategoryId`, `Name`, `Description`, `Phone`, `Email`, `Address`, `Latitude`, `Longitude`, `IsActive` | `Id` | `UserId` referencia `AspNetUsers.Id`; `CategoryId` referencia `StoreCategories.Id`; se relaciona uno a muchos con `Products`, `Orders` y `Reviews`. |
+| `Products` | `Id`, `StoreId`, `Name`, `Description`, `Price`, `Stock`, `ImageUrl`, `IsActive` | `Id` | `StoreId` referencia `Stores.Id`; se relaciona uno a muchos con `OrderDetails`. |
+| `Orders` | `Id`, `CustomerId`, `StoreId`, `DeliveryDriverId`, `OrderStatusId`, `AddressId`, `TotalAmount`, `OrderDate`, `DeliveryDate`, `IsActive` | `Id` | `CustomerId` referencia `Customers.Id`; `StoreId` referencia `Stores.Id`; `DeliveryDriverId` referencia `DeliveryDrivers.Id`; `OrderStatusId` referencia `OrderStatuses.Id`; `AddressId` referencia `Addresses.Id`; se relaciona uno a muchos con `OrderDetails` y uno a uno con `Payments`. |
+| `OrderDetails` | `Id`, `OrderId`, `ProductId`, `Quantity`, `UnitPrice`, `Subtotal`, `IsActive` | `Id` | `OrderId` referencia `Orders.Id`; `ProductId` referencia `Products.Id`. |
+| `OrderStatuses` | `Id`, `Name`, `Description`, `IsActive` | `Id` | No tiene FK; se relaciona uno a muchos con `Orders` mediante `Orders.OrderStatusId`. |
+| `DeliveryDrivers` | `Id`, `UserId`, `FirstName`, `LastName`, `Email`, `Phone`, `CurrentLatitude`, `CurrentLongitude`, `LastLocationUpdate`, `IsAvailable`, `IsActive` | `Id` | `UserId` referencia `AspNetUsers.Id`; se relaciona uno a muchos con `Orders` mediante `Orders.DeliveryDriverId`. |
+| `PaymentMethods` | `Id`, `Name`, `Description`, `IsActive` | `Id` | No tiene FK; se relaciona uno a muchos con `Payments` mediante `Payments.PaymentMethodId`. |
+| `Payments` | `Id`, `OrderId`, `PaymentMethodId`, `Amount`, `PaymentDate`, `TransactionId`, `Status`, `IsActive` | `Id` | `OrderId` referencia `Orders.Id` y es único para mantener relación uno a uno; `PaymentMethodId` referencia `PaymentMethods.Id`. |
+| `Reviews` | `Id`, `CustomerId`, `StoreId`, `Rating`, `Comment`, `IsActive`, `CreatedAt`, `UpdatedAt` | `Id` | `CustomerId` referencia `Customers.Id`; `StoreId` referencia `Stores.Id`. |
