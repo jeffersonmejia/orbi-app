@@ -1,6 +1,90 @@
-# Architecture
+# Arquitectura
 
-## Project Layers
+## Metodología de documentación
+
+Este documento usa la metodología **C4 Model** para describir la arquitectura del sistema. C4 organiza la documentación en niveles: **Contexto**, para explicar quién usa el sistema y con qué servicios interactúa; **Contenedores**, para mostrar las aplicaciones y bases de datos que lo componen; **Componentes**, para detallar las partes internas del proyecto; y **Código/Datos**, para documentar entidades, tablas, campos y relaciones. En Orbi se complementa C4 con un diagrama entidad-relación porque el sistema depende fuertemente de PostgreSQL y de las relaciones configuradas con Entity Framework Core.
+
+## Alcance del sistema
+
+Orbi es una aplicación web de delivery desarrollada con ASP.NET Core MVC, Entity Framework Core, ASP.NET Identity y PostgreSQL. El sistema administra tiendas, categorías, productos, clientes, direcciones, pedidos, detalles de pedido, repartidores, métodos de pago, pagos y reseñas. El acceso se divide en los roles `Admin`, `StoreOwner`, `DeliveryDriver` y `Customer`, aplicando permisos por rol, validaciones de propiedad de datos y eliminación lógica mediante `IsActive`.
+
+## C4 - Nivel 1: Contexto
+
+```mermaid
+flowchart TD
+    Admin[Admin] --> Orbi[Orbi Web App]
+    Owner[StoreOwner] --> Orbi
+    Driver[DeliveryDriver] --> Orbi
+    Customer[Customer] --> Orbi
+    Orbi --> PostgreSQL[(PostgreSQL)]
+    Orbi --> Identity[ASP.NET Identity]
+    Docker[Docker Compose] --> PostgreSQL
+    Docker --> Seed[Seed SQL Scripts]
+    Seed --> PostgreSQL
+```
+
+| Elemento | Descripción |
+| --- | --- |
+| `Admin` | Usuario con acceso completo a catálogos, directorios, tiendas, productos, pedidos, pagos y reseñas. |
+| `StoreOwner` | Usuario dueño de tienda que administra sus tiendas, productos y pedidos relacionados. |
+| `DeliveryDriver` | Usuario repartidor que consulta pedidos asignados y actualiza su estado o perfil. |
+| `Customer` | Usuario cliente que consulta tiendas y productos, registra pedidos y revisa su información propia. |
+| `Orbi Web App` | Aplicación ASP.NET Core MVC que concentra interfaz, controladores, servicios, seguridad y acceso a datos. |
+| `PostgreSQL` | Base de datos relacional donde se guardan entidades de negocio e información de Identity. |
+| `Docker Compose` | Define el entorno local de PostgreSQL y ejecuta scripts de carga inicial. |
+
+## C4 - Nivel 2: Contenedores
+
+```mermaid
+flowchart LR
+    Browser[Navegador web] --> Web[Orbi.Web ASP.NET Core MVC]
+    Web --> EF[Entity Framework Core]
+    Web --> Identity[ASP.NET Identity]
+    EF --> DB[(PostgreSQL OrbiDb)]
+    Identity --> DB
+    Seed[orbi-seed container] --> DB
+```
+
+| Contenedor | Tecnología | Responsabilidad |
+| --- | --- | --- |
+| `Browser` | Navegador web | Consume las vistas Razor y envía solicitudes HTTP al sistema. |
+| `Orbi.Web` | ASP.NET Core MVC `net10.0` | Ejecuta controladores, vistas, servicios, filtros de seguridad, autenticación y rutas MVC. |
+| `Entity Framework Core` | EF Core con Npgsql | Traduce consultas LINQ a SQL, ejecuta migraciones y gestiona relaciones con PostgreSQL. |
+| `ASP.NET Identity` | Identity EF Core | Administra usuarios, roles, contraseñas, cookies y bloqueo por intentos fallidos. |
+| `PostgreSQL OrbiDb` | `postgres:16-alpine` | Persiste tablas de negocio, tablas `AspNet*`, índices, relaciones y datos semilla. |
+| `orbi-seed container` | PostgreSQL client image | Ejecuta scripts SQL de carga y validación después de que el esquema EF Core exista. |
+
+## C4 - Nivel 3: Componentes internos
+
+```mermaid
+flowchart TD
+    Views[Razor Views] --> ViewModels[ViewModels]
+    ViewModels --> Controllers[Controllers]
+    Controllers --> Filters[Security Filters]
+    Controllers --> Services[Services]
+    Services --> Access[CurrentUserAccess]
+    Services --> DbContext[AppDbContext]
+    DbContext --> Models[Models]
+    DbContext --> PostgreSQL[(PostgreSQL)]
+    Program[Program.cs] --> Controllers
+    Program --> Services
+    Program --> DbContext
+    Program --> Identity[Identity]
+```
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `Views` | Presentan formularios, listados, detalles y navegación según el rol autenticado. |
+| `ViewModels` | Transportan datos específicos para vistas sin exponer toda la entidad de base de datos. |
+| `Controllers` | Reciben solicitudes HTTP, validan acciones MVC y coordinan respuestas. |
+| `Services` | Centralizan lógica de negocio, paginación, búsquedas, reglas por propietario y validaciones antes de guardar. |
+| `Security Filters` | Aplican acceso por rol y manejan respuestas `403` para rutas prohibidas. |
+| `CurrentUserAccess` | Obtiene datos del usuario actual y permite filtrar registros según rol y propiedad. |
+| `AppDbContext` | Define tablas, relaciones, índices, filtros globales y conexión con PostgreSQL. |
+| `Models` | Representan entidades persistentes del dominio de delivery. |
+| `Program.cs` | Configura servicios, middleware, Identity, seguridad, migraciones, seed y rutas. |
+
+## Capas del proyecto
 
 ```mermaid
 graph TD
@@ -26,150 +110,68 @@ graph TD
     ViewModels --> Controllers
 ```
 
-## Entity Relationship
+## Flujo principal de ejecución
+
+```mermaid
+sequenceDiagram
+    actor User as Usuario autenticado
+    participant View as Razor View
+    participant Controller as Controller
+    participant Service as Service
+    participant Db as AppDbContext
+    participant Pg as PostgreSQL
+
+    User->>View: Interactúa con pantalla MVC
+    View->>Controller: Envía solicitud HTTP
+    Controller->>Service: Solicita operación del módulo
+    Service->>Service: Valida rol, propietario y datos
+    Service->>Db: Ejecuta consulta o cambio con EF Core
+    Db->>Pg: Genera y ejecuta SQL
+    Pg-->>Db: Retorna datos o confirma operación
+    Db-->>Service: Devuelve entidades o resultado
+    Service-->>Controller: Devuelve ViewModel o respuesta
+    Controller-->>View: Renderiza vista actualizada
+```
+
+## Relación entidad-relación
 
 ```mermaid
 erDiagram
-    Customer ||--o{ Address : has
-    Customer ||--o{ Order : places
-    Customer ||--o{ Review : writes
-    StoreCategory ||--o{ Store : categorizes
-    Store ||--o{ Product : offers
-    Store ||--o{ Order : receives
-    Store ||--o{ Review : rated_by
-    Order ||--o{ OrderDetail : contains
-    Product ||--o{ OrderDetail : listed_in
-    OrderStatus ||--o{ Order : tracks
-    DeliveryDriver ||--o{ Order : delivers
-    PaymentMethod ||--o{ Payment : used_in
-    Order ||--o| Payment : pays
+    AspNetUsers ||--o| Customers : owns_profile
+    AspNetUsers ||--o{ Stores : owns
+    AspNetUsers ||--o| DeliveryDrivers : owns_profile
 
-    Customer {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        string Phone
-        string PasswordHash
-        bool IsActive
-        datetime CreatedAt
-        datetime UpdatedAt
-    }
-    Address {
-        int Id PK
-        int CustomerId FK
-        string Street
-        string City
-        string State
-        string ZipCode
-        string Country
-        double Latitude
-        double Longitude
-        bool IsActive
-    }
-    StoreCategory {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-    }
-    Store {
-        int Id PK
-        int CategoryId FK
-        string Name
-        string Description
-        string Phone
-        string Email
-        string Address
-        double Latitude
-        double Longitude
-        bool IsActive
-    }
-    Product {
-        int Id PK
-        int StoreId FK
-        string Name
-        string Description
-        decimal Price
-        int Stock
-        string ImageUrl
-        bool IsActive
-    }
-    Order {
-        int Id PK
-        int CustomerId FK
-        int StoreId FK
-        int DeliveryDriverId FK
-        int OrderStatusId FK
-        int AddressId FK
-        decimal TotalAmount
-        datetime OrderDate
-        datetime DeliveryDate
-        bool IsActive
-    }
-    OrderDetail {
-        int Id PK
-        int OrderId FK
-        int ProductId FK
-        int Quantity
-        decimal UnitPrice
-        decimal Subtotal
-        bool IsActive
-    }
-    OrderStatus {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-    }
-    DeliveryDriver {
-        int Id PK
-        string FirstName
-        string LastName
-        string Email UK
-        string Phone
-        double CurrentLatitude
-        double CurrentLongitude
-        datetime LastLocationUpdate
-        bool IsAvailable
-        bool IsActive
-    }
-    PaymentMethod {
-        int Id PK
-        string Name UK
-        string Description
-        bool IsActive
-    }
-    Payment {
-        int Id PK
-        int OrderId FK UK
-        int PaymentMethodId FK
-        decimal Amount
-        datetime PaymentDate
-        string TransactionId
-        string Status
-        bool IsActive
-    }
-    Review {
-        int Id PK
-        int CustomerId FK
-        int StoreId FK
-        int Rating
-        string Comment
-        bool IsActive
-    }
+    Customers ||--o{ Addresses : has
+    Customers ||--o{ Orders : places
+    Customers ||--o{ Reviews : writes
+
+    StoreCategories ||--o{ Stores : classifies
+    Stores ||--o{ Products : offers
+    Stores ||--o{ Orders : receives
+    Stores ||--o{ Reviews : receives
+
+    Addresses ||--o{ Orders : delivery_address
+    OrderStatuses ||--o{ Orders : tracks
+    DeliveryDrivers o|--o{ Orders : delivers
+
+    Orders ||--o{ OrderDetails : contains
+    Products ||--o{ OrderDetails : included_in
+    Orders ||--o| Payments : has
+    PaymentMethods ||--o{ Payments : used_by
 ```
 
-## Scalability
+## Atributos de calidad
 
-| Concern | Implementation |
-|---------|---------------|
-| Pagination | Skip and Take with page and pageSize parameters |
-| Filtering | IQueryable chain with server-side predicates |
-| Soft Delete | IsActive flag with global query filters |
-| Indexes | Composite indexes on StoreId plus Name, CustomerId plus StoreId, OrderDate |
-| Eager Loading | Selective Include to prevent N plus 1 |
-| Sessions | Distributed cache ready for Redis or SQL Server |
+| Atributo | Implementación en Orbi |
+| --- | --- |
+| Escalabilidad de consultas | Las listas usan `IQueryable`, `Skip` y `Take` para filtrar, ordenar y paginar desde PostgreSQL sin cargar tablas completas en memoria. |
+| Rendimiento de lectura | Las pantallas de consulta usan `AsNoTracking()` cuando no necesitan modificar entidades, reduciendo el costo de seguimiento de Entity Framework Core. |
+| Integridad de datos | `AppDbContext` configura llaves foráneas, relaciones uno a muchos y uno a uno, restricciones de borrado e índices únicos en campos como correos y nombres de catálogos. |
+| Seguridad de acceso | ASP.NET Identity, `RoleAccessFilter`, `CurrentUserAccess` y los servicios limitan rutas y registros según rol y propietario. |
+| Eliminación lógica | Los registros de negocio usan `IsActive` y filtros globales para ocultar datos eliminados sin borrar físicamente la información. |
+| Optimización de búsqueda | El modelo incluye índices compuestos para nombres, correos, fechas de pedido, estados, tiendas, clientes y repartidores asignados. |
+| Seguridad web | `Program.cs` configura cookies `HttpOnly`, `SameSite=Strict`, antiforgery en formularios, CSP, `X-Frame-Options` y `X-Content-Type-Options`. |
+| Despliegue local reproducible | `docker-compose.yml` levanta PostgreSQL 16, aplica límites de CPU/memoria y ejecuta scripts SQL de semilla y validación. |
 
 ## Detalles
 
