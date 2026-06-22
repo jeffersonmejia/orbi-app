@@ -224,3 +224,25 @@ erDiagram
 | `PaymentMethods` | `Id`, `Name`, `Description`, `IsActive` | `Id` | No tiene FK; se relaciona uno a muchos con `Payments` mediante `Payments.PaymentMethodId`. |
 | `Payments` | `Id`, `OrderId`, `PaymentMethodId`, `Amount`, `PaymentDate`, `TransactionId`, `Status`, `IsActive` | `Id` | `OrderId` referencia `Orders.Id` y es único para mantener relación uno a uno; `PaymentMethodId` referencia `PaymentMethods.Id`. |
 | `Reviews` | `Id`, `CustomerId`, `StoreId`, `Rating`, `Comment`, `IsActive`, `CreatedAt`, `UpdatedAt` | `Id` | `CustomerId` referencia `Customers.Id`; `StoreId` referencia `Stores.Id`. |
+
+## Tecnologías principales
+
+```mermaid
+flowchart TD
+    usuario["Usuario en navegador"] --> bootstrap["Bootstrap"]
+    bootstrap --> mvc["ASP.NET Core MVC"]
+    mvc --> efcore["Entity Framework Core"]
+    efcore --> postgres[("PostgreSQL")]
+
+    bootstrap -.-> vistas["Razor Views"]
+    mvc -.-> controladores["Controllers y Services"]
+    efcore -.-> contexto["AppDbContext y Migrations"]
+    postgres -.-> datos["Tablas, relaciones e índices"]
+```
+
+| Tecnología | Función dentro de Orbi |
+| --- | --- |
+| ASP.NET Core MVC | Organiza la aplicación en controladores, vistas Razor, modelos, servicios y rutas web. |
+| PostgreSQL | Almacena la información persistente del sistema, incluyendo usuarios, tiendas, productos, pedidos, pagos y reseñas. |
+| Entity Framework Core | Conecta el código C# con PostgreSQL mediante `AppDbContext`, modelos, migraciones, consultas LINQ y relaciones. |
+| Bootstrap | Proporciona estilos y componentes visuales para formularios, tablas, navegación y diseño responsive en las vistas. |
