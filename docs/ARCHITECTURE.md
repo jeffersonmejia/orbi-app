@@ -233,11 +233,15 @@ flowchart TD
     bootstrap --> mvc["ASP.NET Core MVC"]
     mvc --> efcore["Entity Framework Core"]
     efcore --> postgres[("PostgreSQL")]
+    docker["Docker Compose"] --> postgres
+    docker --> seed["Contenedor seed"]
 
     bootstrap -.-> vistas["Razor Views"]
     mvc -.-> controladores["Controllers y Services"]
     efcore -.-> contexto["AppDbContext y Migrations"]
     postgres -.-> datos["Tablas, relaciones e índices"]
+    docker -.-> recursos["1.5 CPU, 1536 MB RAM, 256 MB shm"]
+    seed -.-> scripts["Scripts SQL de carga y validación"]
 ```
 
 | Tecnología | Función dentro de Orbi |
@@ -246,3 +250,21 @@ flowchart TD
 | PostgreSQL | Almacena la información persistente del sistema, incluyendo usuarios, tiendas, productos, pedidos, pagos y reseñas. |
 | Entity Framework Core | Conecta el código C# con PostgreSQL mediante `AppDbContext`, modelos, migraciones, consultas LINQ y relaciones. |
 | Bootstrap | Proporciona estilos y componentes visuales para formularios, tablas, navegación y diseño responsive en las vistas. |
+| Docker Compose | Levanta el entorno local con PostgreSQL 16 y un contenedor `seed`; asigna a la base `1.5` CPU, `1536m` de memoria, `256mb` de memoria compartida y ejecuta scripts SQL de carga/validación cuando el esquema de EF Core está listo. |
+
+| Recurso o parámetro de PostgreSQL | Valor configurado |
+| --- | --- |
+| Imagen | `postgres:16-alpine` |
+| Contenedor | `orbi-postgres` |
+| Puerto | `5432:5432` |
+| Base de datos | `OrbiDb` |
+| CPU asignada | `1.5` |
+| Memoria asignada | `1536m` |
+| Memoria compartida | `256mb` |
+| Conexiones máximas | `30` |
+| `shared_buffers` | `256MB` |
+| `effective_cache_size` | `1GB` |
+| `work_mem` | `8MB` |
+| `maintenance_work_mem` | `256MB` |
+| `checkpoint_timeout` | `10min` |
+| `wal_compression` | `on` |
